@@ -1,0 +1,282 @@
+import 'package:iclf_parser/iclf_parser.dart';
+import 'package:test/test.dart';
+import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
+import 'package:http/http.dart' as http;
+
+import 'iclf_parser_test.mocks.dart'; // Generated file
+
+// Generate mocks for http.Client (generates MockClient)
+@GenerateMocks([http.Client])
+void main() {
+  const testJson = r'''
+{
+  "version": "1.0.hd",
+  "directives": [
+    {
+      "name": "title",
+      "description": "Sets the song title.",
+      "instructions": "Display as the song’s title in the UI. Store as metadata for search or sharing.",
+      "scope": "global",
+      "required": true,
+      "example": "Parla Più Piano",
+      "unique": true
+    },
+    {
+      "name": "key",
+      "description": "Specifies the musical key of the song or section.",
+      "instructions": "Display as the song’s key in the UI. Use for transposition calculations. If within a section, applies to that section only.",
+      "scope": "global or section",
+      "required": true,
+      "default": "C",
+      "example": "Am",
+      "unique": true,
+      "validation": {
+        "type": "string",
+        "pattern": "^[A-G](?:#|b)?(?:m|maj|min|dim|°|aug|sus2|sus4)?$",
+        "description": "Must be a musical key: A-G, optional # or b, optional m, maj, min, dim, °, aug, sus2, or sus4 (e.g., C, Am, F#, Bbmaj)."
+      }
+    },
+    {
+      "name": "composer",
+      "description": "Specifies the song’s composer.",
+      "instructions": "Display as the composer in the UI, typically below the title. Store as metadata for attribution.",
+      "scope": "global",
+      "required": false,
+      "example": "Nino Rota",
+      "unique": true
+    },
+    {
+      "name": "arranged_by",
+      "description": "Specifies the arranger or transcriber of the song or ICLF file.",
+      "instructions": "Display as metadata in the UI, typically below the title or composer. Store for attribution or search.",
+      "scope": "global",
+      "required": false,
+      "example": "Transcribed by Maria",
+      "unique": true,
+      "validation": {
+        "type": "string",
+        "pattern": "^.+$",
+        "description": "Must be a non-empty string (e.g., Transcribed by Maria)."
+      }
+    },
+    {
+      "name": "creation_date",
+      "description": "Specifies the creation date of the ICLF file.",
+      "instructions": "Display as metadata in the UI or use for sorting songs. Store as ISO 8601 date (YYYY-MM-DD).",
+      "scope": "global",
+      "required": false,
+      "example": "2025-04-28",
+      "unique": true,
+      "validation": {
+        "type": "string",
+        "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+        "description": "Must be an ISO 8601 date in YYYY-MM-DD format (e.g., 2025-04-28)."
+      }
+    },
+    {
+      "name": "section",
+      "description": "Defines a new section (e.g., Verse, Chorus).",
+      "instructions": "Start a new section in the data model. Display the section name as a heading in the UI.",
+      "scope": "section",
+      "required": false,
+      "example": "Verse",
+      "unique": false
+    },
+    {
+      "name": "repeat",
+      "description": "Instructs to repeat a section a specified number of times.",
+      "instructions": "Parse as 'Section, Nx' (e.g., 'Chorus, 2x'). Display a repeat indicator (e.g., 'Repeat Chorus 2x') or duplicate section content in the UI. Validate that Section exists.",
+      "scope": "section",
+      "required": false,
+      "example": "Chorus, 2x",
+      "unique": false,
+      "validation": {
+        "type": "string",
+        "pattern": "^\\w+,\\s*\\d+x$",
+        "description": "Must be 'Section, Nx' where Section is a section name and N is a positive integer (e.g., Chorus, 2x)."
+      }
+    },
+    {
+      "name": "capo",
+      "description": "Indicates the capo position on a guitar.",
+      "instructions": "Display as 'Capo: N' in the UI. Use for chord transposition if requested.",
+      "scope": "global",
+      "required": false,
+      "default": "0",
+      "example": "2",
+      "unique": true,
+      "validation": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 12,
+        "description": "Must be a non-negative integer between 0 and 12 (e.g., 2)."
+      }
+    },
+    {
+      "name": "tempo",
+      "description": "Sets the tempo in beats per minute (BPM).",
+      "instructions": "Display as 'Tempo: N BPM' in the UI. Optionally integrate with a metronome feature.",
+      "scope": "global",
+      "required": false,
+      "example": "80",
+      "unique": true,
+      "validation": {
+        "type": "integer",
+        "minimum": 20,
+        "maximum": 300,
+        "description": "Must be a positive integer between 20 and 300 (e.g., 80)."
+      }
+    },
+    {
+      "name": "strumming",
+      "description": "Specifies a strumming pattern for a section or song.",
+      "instructions": "Display as a rhythmic guide (e.g., 'D-DU-UDU'). Optionally integrate with a metronome or visual guide in the UI.",
+      "scope": "global or section",
+      "required": false,
+      "example": "D-DU-UDU",
+      "unique": false,
+      "validation": {
+        "type": "string",
+        "pattern": "^[DUR\\-]+$",
+        "description": "Must be a sequence of D (down), U (up), R (rest), or - (pause) (e.g., D-DU-UDU)."
+      }
+    },
+    {
+      "name": "tuning",
+      "description": "Specifies the instrument tuning as a text attribute.",
+      "instructions": "Display as metadata in the UI (e.g., 'Tuning: EADGBE'). Store for reference; no structured parsing in v1.0.",
+      "scope": "global",
+      "required": false,
+      "example": "EADGBE",
+      "unique": true
+    }
+  ],
+  "chords": {
+    "syntax": "[Chord[:Attribute, Value][Attribute2, Value2]]",
+    "description": "Notates a chord aligned with a syllable or word. Optional attributes specify inversions, voicings, or performance details.",
+    "instructions": "Display the chord above or before the associated text. Parse attributes to adjust display (e.g., show C/E for [C:inversion, 1]). No diagrams in v1.0.",
+    "validation": {
+      "chord": {
+        "type": "string",
+        "pattern": "^[A-G](?:#|b)?(?:m|maj|min|dim|°|aug|sus2|sus4|add9)?(?:6|7|9|11|13)?(?:\\((?:b|#)?(?:5|9|11|13)\\))?(?:/A-G (?:#|b)?)?$",
+        "description": "Must be a valid chord: A-G, optional # or b, optional quality (m, maj, min, dim, °, aug, sus2, sus4, add9), optional extension (6, 7, 9, 11, 13), optional altered note ((b5), (#9), etc.), optional bass note (/E) (e.g., C, Am, D7(b9)13, Dmaj9, C6, D9)."
+      }
+    },
+    "attributes": [
+      {
+        "name": "inversion",
+        "description": "Specifies the chord inversion (e.g., first inversion for C/E).",
+        "instructions": "Display as Chord/Bass (e.g., C/E for [C:inversion, 1]).",
+        "example": "1",
+        "validation": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3,
+          "description": "Must be a non-negative integer (0 for root position, 1 for first inversion, etc., up to 3 for seventh chords)."
+        }
+      },
+      {
+        "name": "voicing",
+        "description": "Specifies a chord voicing or fingering (e.g., open or barre).",
+        "instructions": "Display the chord with the specified voicing (e.g., Am/open).",
+        "example": "open",
+        "validation": {
+          "type": "string",
+          "pattern": "^\\w+$",
+          "description": "Must be a voicing name (e.g., open, barre)."
+        }
+      },
+      {
+        "name": "capo",
+        "description": "Transposes the chord as if played with a capo.",
+        "instructions": "Display the transposed chord (e.g., [C:capo, 2] as D).",
+        "example": "2",
+        "validation": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 12,
+          "description": "Must be a non-negative integer between 0 and 12 (e.g., 2)."
+        }
+      },
+      {
+        "name": "bass",
+        "description": "Specifies one or more bass notes for the chord, including runs.",
+        "instructions": "Display as Chord/Bass or indicate bass run (e.g., Am/A-C-E for [Am:bass, A-C-E]).",
+        "example": "A-C-E",
+        "validation": {
+          "type": "string",
+          "pattern": "^[A-G](?:#|b)?(?:-A-G (?:#|b)?)*$",
+          "description": "Must be one or more musical notes separated by hyphens (A-G, optional # or b) (e.g., G, A-C-E)."
+        }
+      }
+    ]
+  }
+}
+'''; // Full actual JSON as static data for tests
+
+  group('IclfParser', () {
+    late IclfParser parser;
+
+    setUp(() {
+      parser = IclfParser(testJson);
+    });
+
+    test('parses valid content', () {
+      const content = '{title: Test}\n{key: C}\n[C]Lyric';
+      final result = parser.parse(content);
+      expect(result.status, ParseStatus.valid);
+      expect(result.song?.title, 'Test');
+      expect(result.song?.key, 'C');
+    });
+
+    test('001 - handles recoverable content (missing key)', () {
+      const content = '{title: Test}\n[C]Lyric';
+      final result = parser.parse(content);
+      expect(result.status, ParseStatus.recoverable);
+      expect(result.warnings, contains('Added missing {key: C}'));
+      expect(result.fixedContent, contains('{key: C}'));
+      expect(result.song?.key, 'C');
+    });
+
+    test('002 - handles invalid content (missing title)', () {
+      const content = '{key: C}\n[C]Lyric';
+      final result = parser.parse(content);
+      expect(result.status, ParseStatus.invalid);
+      expect(result.errors, contains('Missing required {title: ...}'));
+    });
+
+    test('003 - computes file hash', () {
+      const content = '{title: Test}';
+      final result = parser.parse(content, filePath: 'test.iclf');
+      expect(result.fileHash, isNotNull);
+    });
+
+    test('004 - fromUrl loads successfully', () async {
+      final mockClient = MockClient();
+      when(mockClient.get(Uri.parse(
+              'https://raw.githubusercontent.com/msant77/iclf-standard/refs/heads/master/directives.json')))
+          .thenAnswer((_) async => http.Response(testJson, 200));
+
+      final urlParser = await IclfParser.fromUrl(
+          'https://raw.githubusercontent.com/msant77/iclf-standard/refs/heads/master/directives.json',
+          httpClient: mockClient);
+
+      expect(urlParser, isA<IclfParser>());
+    });
+
+    test('005 - fromUrl throws on failure', () async {
+      final mockClient = MockClient();
+      when(mockClient.get(Uri.parse(
+              'https://raw.githubusercontent.com/msant77/iclf-standard/refs/heads/master/directives.json')))
+          .thenAnswer((_) async => http.Response('Error', 404));
+
+      expect(
+        () async => await IclfParser.fromUrl(
+            'https://raw.githubusercontent.com/msant77/iclf-standard/refs/heads/master/directives.json',
+            httpClient: mockClient),
+        throwsException,
+      );
+    });
+  });
+}

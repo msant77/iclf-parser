@@ -1,0 +1,11 @@
+include: package:lints/recommended.yaml
+
+analyzer:
+  exclude:
+    - build/**
+
+linter:
+  rules:
+    - avoid_print
+    - prefer_const_constructors
+    - prefer_final_locals
