@@ -14,19 +14,19 @@ void main() {
       expect(result.status, ParseStatus.invalid);
       expect(
           result.errors, contains('Missing required directives: {title: ...}'));
-    });
+    }, tags: ['tag1']);
     test('007 handles invalid chord', () {
       const content = '{title: Test}\n{key: C}\n[Invalid]Lyric';
       final result = parser.parse(content);
       expect(result.status, ParseStatus.invalid);
       expect(result.errors, contains('Invalid chord: Invalid'));
-    });
+    }, tags: ['tag1']);
     test('008 handles invalid directive value', () {
       const content = '{title: Test}\n{key: InvalidKey}\n[C]Lyric';
       final result = parser.parse(content);
       expect(result.status, ParseStatus.invalid);
       expect(result.errors.any((e) => e.contains('Invalid value for key')),
           isTrue);
-    });
+    }, tags: ['tag1']);
   });
 }
