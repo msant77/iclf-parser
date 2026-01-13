@@ -16,7 +16,7 @@ void main() {
           result.song?.globalNotes
               .any((note) => note.content == '{mood: Romantic}'),
           isTrue);
-    });
+    }, tags: ['tag1']);
     test('010 handles # notes', () {
       const content = '{title: Test}\n{key: C}\n# Strum gently\n[C]Lyric';
       final result = parser.parse(content);
@@ -25,13 +25,13 @@ void main() {
           result.song?.globalNotes
               .any((note) => note.content == 'Strum gently' && note.isHashNote),
           isTrue);
-    });
+    }, tags: ['tag1']);
     test('011 handles chord attributes', () {
       const content = '{title: Test}\n{key: C}\n[C:inversion,1]Lyric';
       final result = parser.parse(content);
       expect(result.status, ParseStatus.valid);
       expect(result.song?.sections.first.chords.first.attributes['inversion'],
           '1');
-    });
+    }, tags: ['tag2']);
   });
 }
