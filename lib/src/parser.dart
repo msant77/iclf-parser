@@ -4,10 +4,12 @@ import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 
 import 'models.dart';
+import 'validator.dart';
 
 class IclfParser {
   late Map<String, dynamic> _directivesConfig;
   late Map<String, dynamic> _chordsConfig;
+  final Validator _validator = Validator();
 
   IclfParser(String directivesJsonContent) {
     final json = jsonDecode(directivesJsonContent);
@@ -18,16 +20,11 @@ class IclfParser {
   static Future<IclfParser> fromUrl(String url,
       {http.Client? httpClient}) async {
     final client = httpClient ?? http.Client();
-    try {
-      final response = await client.get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        return IclfParser(response.body);
-      } else {
-        throw Exception(
-            'Failed to load directives.json: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Error fetching directives.json: $e');
+    final response = await client.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      return IclfParser(response.body);
+    } else {
+      throw Exception('Failed to load directives.json: ${response.statusCode}');
     }
   }
 
@@ -36,17 +33,15 @@ class IclfParser {
     final errors = <String>[];
     final warnings = <String>[];
     final globalDirectives = <String, String>{};
-    final seenGlobals = <String, int>{}; // Track duplicates
+    final seenGlobals = <String, int>{};
     final notes = <Note>[];
     final sections = <Section>[];
     Section? currentSection;
-    bool hasTitle = false;
-    bool hasKey = false;
     bool malformed = false;
 
-    // Regex patterns
     final directiveRegex = RegExp(r'^\{([^:]+):\s*(.+)\}$');
-    final chordRegex = RegExp(r'\[([^\]:]+)(?::([^\]]+))?\]([^\[]+)');
+    final chordRegex =
+        RegExp(r'\[([^\]:]+)(?::([^\]]+))?\](.+)'); // Unicode-safe
     final noteRegex = RegExp(r'^# (.+)');
     final chordPattern =
         RegExp(_chordsConfig['validation']['chord']['pattern']);
@@ -59,9 +54,14 @@ class IclfParser {
       if (directiveMatch != null) {
         final key = directiveMatch.group(1)!.trim();
         final value = directiveMatch.group(2)!.trim();
+        if (key == 'section') {
+          currentSection = Section(value);
+          sections.add(currentSection);
+          continue;
+        }
         if (_directivesConfig.containsKey(key)) {
           final config = _directivesConfig[key];
-          if (!_validateDirective(config, value, errors)) {
+          if (!_validator.validateDirective(config, value, errors)) {
             malformed = true;
           }
           if (config['scope'].contains('global')) {
@@ -72,8 +72,6 @@ class IclfParser {
             }
             seenGlobals[key] = 1;
             globalDirectives[key] = value;
-            if (key == 'title') hasTitle = true;
-            if (key == 'key') hasKey = true;
             if (sections.isNotEmpty) {
               warnings.add(
                   'Late global directive {$key: $value}; applied song-wide.');
@@ -121,8 +119,7 @@ class IclfParser {
               }
             }
           }
-          if (!chordPattern.hasMatch(chordName)) {
-            errors.add('Invalid chord: $chordName');
+          if (!_validator.validateChord(chordName, chordPattern, errors)) {
             malformed = true;
           }
           for (var entry in attributes.entries) {
@@ -133,7 +130,7 @@ class IclfParser {
             if (attrConfig == null) {
               errors.add('Unknown chord attribute: ${entry.key}');
               malformed = true;
-            } else if (!_validateAttribute(
+            } else if (!_validator.validateAttribute(
                 attrConfig['validation'], entry.value, errors)) {
               malformed = true;
             }
@@ -147,21 +144,39 @@ class IclfParser {
       malformed = true;
     }
 
-    String? fixedContent;
+    String? fixedContent = content;
     ParseStatus status = ParseStatus.valid;
-    if (!hasTitle || malformed) {
-      status = ParseStatus.invalid;
-      errors.add(!hasTitle
-          ? 'Missing required {title: ...}'
-          : 'Malformed syntax or invalid elements.');
-    } else if (!hasKey || warnings.isNotEmpty) {
-      status = ParseStatus.recoverable;
-      if (!hasKey) {
-        fixedContent = '{key: C}\n' + content;
-        warnings.add('Added missing {key: C}');
-      } else {
-        fixedContent = content;
+    List<String> missingRequired = [];
+
+    for (var configEntry in _directivesConfig.entries) {
+      var config = configEntry.value;
+      if (config['required'] == true &&
+          config['scope'].contains('global') &&
+          !globalDirectives.containsKey(configEntry.key)) {
+        if (config.containsKey('default')) {
+          final defaultValue = config['default'] as String;
+          fixedContent =
+              '{${configEntry.key}: $defaultValue}\n' + fixedContent!;
+          warnings.add('Added missing {${configEntry.key}: $defaultValue}');
+          globalDirectives[configEntry.key] = defaultValue;
+          if (status == ParseStatus.valid) status = ParseStatus.recoverable;
+        } else {
+          missingRequired.add(configEntry.key);
+        }
       }
+    }
+
+    if (missingRequired.isNotEmpty || malformed) {
+      status = ParseStatus.invalid;
+      if (missingRequired.isNotEmpty) {
+        errors.add(
+            'Missing required directives: ${missingRequired.map((k) => '{$k: ...}').join(', ')}');
+      }
+      if (malformed) {
+        errors.add('Malformed syntax or invalid elements.');
+      }
+    } else if (warnings.isNotEmpty) {
+      status = ParseStatus.recoverable;
     }
 
     Song? song;
@@ -170,7 +185,8 @@ class IclfParser {
           Song(globalDirectives['title'] ?? '', globalDirectives['key'] ?? 'C');
       song.globals.addAll(globalDirectives);
       song.globalNotes.addAll(notes);
-      song.sections.addAll(sections);
+      song.sections
+          .addAll(sections); // No cast needed - sections is List<Section>
       for (var sec in sections) {
         for (var dir in sec.localDirectives) {
           if (dir.name == 'repeat') {
@@ -192,51 +208,9 @@ class IclfParser {
       song: song,
       errors: errors,
       warnings: warnings,
-      fixedContent: fixedContent,
+      fixedContent: fixedContent == content ? null : fixedContent,
       fileHash: hash,
     );
-  }
-
-  bool _validateDirective(
-      Map<String, dynamic> config, String value, List<String> errors) {
-    final val = config['validation'];
-    if (val == null) return true;
-    if (val['type'] == 'string') {
-      if (val['pattern'] != null && !RegExp(val['pattern']).hasMatch(value)) {
-        errors.add(
-            'Invalid value for ${config['name']}: $value (${val['description']})');
-        return false;
-      }
-    } else if (val['type'] == 'integer') {
-      final intVal = int.tryParse(value);
-      if (intVal == null ||
-          intVal < val['minimum'] ||
-          intVal > val['maximum']) {
-        errors.add(
-            'Invalid integer for ${config['name']}: $value (${val['description']})');
-        return false;
-      }
-    }
-    return true;
-  }
-
-  bool _validateAttribute(
-      Map<String, dynamic> val, String value, List<String> errors) {
-    if (val['type'] == 'string') {
-      if (val['pattern'] != null && !RegExp(val['pattern']).hasMatch(value)) {
-        errors.add('Invalid attribute value: $value (${val['description']})');
-        return false;
-      }
-    } else if (val['type'] == 'integer') {
-      final intVal = int.tryParse(value);
-      if (intVal == null ||
-          intVal < val['minimum'] ||
-          intVal > val['maximum']) {
-        errors.add('Invalid attribute integer: $value (${val['description']})');
-        return false;
-      }
-    }
-    return true;
   }
 
   String getTempFilePath(String originalPath) {

@@ -1,4 +1,3 @@
-// Enums and Models
 enum ParseStatus { valid, invalid, recoverable }
 
 class Directive {
@@ -10,13 +9,13 @@ class Directive {
 class Chord {
   final String name;
   final Map<String, String> attributes;
-  final String lyrics;
+  final String lyrics; // Unicode-safe
   Chord(this.name, this.attributes, this.lyrics);
 }
 
 class Note {
-  final String content;
-  final bool isHashNote; // true for #, false for custom {key: value}
+  final String content; // Unicode-safe
+  final bool isHashNote;
   Note(this.content, this.isHashNote);
 }
 
@@ -24,8 +23,7 @@ class Section {
   final String name;
   final List<Chord> chords;
   final List<Note> notes;
-  final List<Directive>
-      localDirectives; // e.g., section-specific key or strumming
+  final List<Directive> localDirectives;
   Section(this.name)
       : chords = [],
         notes = [],
@@ -34,8 +32,8 @@ class Section {
 
 class Song {
   final String title;
-  String key; // Can be overridden per section
-  final Map<String, String> globals; // Other global directives
+  String key;
+  final Map<String, String> globals;
   final List<Section> sections;
   final List<Note> globalNotes;
   Song(this.title, this.key)
@@ -49,8 +47,8 @@ class ParseResult {
   final Song? song;
   final List<String> errors;
   final List<String> warnings;
-  final String? fixedContent; // For recoverable; app can save to temp
-  final String? fileHash; // MD5 hash of original content
+  final String? fixedContent;
+  final String? fileHash;
   ParseResult({
     required this.status,
     this.song,

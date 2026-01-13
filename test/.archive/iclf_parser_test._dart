@@ -11,7 +11,7 @@ import 'iclf_parser_test.mocks.dart'; // Generated file
 void main() {
   const testJson = r'''
 {
-  "version": "1.0.hd",
+  "version": "1.0",
   "directives": [
     {
       "name": "title",
@@ -159,7 +159,7 @@ void main() {
     "validation": {
       "chord": {
         "type": "string",
-        "pattern": "^[A-G](?:#|b)?(?:m|maj|min|dim|°|aug|sus2|sus4|add9)?(?:6|7|9|11|13)?(?:\\((?:b|#)?(?:5|9|11|13)\\))?(?:/A-G (?:#|b)?)?$",
+        "pattern": "^[A-G](?:#|b)?(?:m|maj|min|dim|°|aug|sus2|sus4|add9)?(?:6|7|9|11|13)?(?:\\((?:b|#)?(?:5|9|11|13)\\))?(?:/[A-G](?:#|b)?)?$",
         "description": "Must be a valid chord: A-G, optional # or b, optional quality (m, maj, min, dim, °, aug, sus2, sus4, add9), optional extension (6, 7, 9, 11, 13), optional altered note ((b5), (#9), etc.), optional bass note (/E) (e.g., C, Am, D7(b9)13, Dmaj9, C6, D9)."
       }
     },
@@ -206,14 +206,14 @@ void main() {
         "example": "A-C-E",
         "validation": {
           "type": "string",
-          "pattern": "^[A-G](?:#|b)?(?:-A-G (?:#|b)?)*$",
+          "pattern": "^[A-G](?:#|b)?(?:-[A-G](?:#|b)?)*$",
           "description": "Must be one or more musical notes separated by hyphens (A-G, optional # or b) (e.g., G, A-C-E)."
         }
       }
     ]
   }
 }
-'''; // Full actual JSON as static data for tests
+''';
 
   group('IclfParser', () {
     late IclfParser parser;
@@ -222,7 +222,7 @@ void main() {
       parser = IclfParser(testJson);
     });
 
-    test('parses valid content', () {
+    test('001. parses valid content', () {
       const content = '{title: Test}\n{key: C}\n[C]Lyric';
       final result = parser.parse(content);
       expect(result.status, ParseStatus.valid);
@@ -230,7 +230,7 @@ void main() {
       expect(result.song?.key, 'C');
     });
 
-    test('001 - handles recoverable content (missing key)', () {
+    test('002. handles recoverable content (missing key)', () {
       const content = '{title: Test}\n[C]Lyric';
       final result = parser.parse(content);
       expect(result.status, ParseStatus.recoverable);
@@ -239,44 +239,153 @@ void main() {
       expect(result.song?.key, 'C');
     });
 
-    test('002 - handles invalid content (missing title)', () {
+    test('003. handles invalid content (missing title)', () {
       const content = '{key: C}\n[C]Lyric';
       final result = parser.parse(content);
       expect(result.status, ParseStatus.invalid);
       expect(result.errors, contains('Missing required {title: ...}'));
     });
 
-    test('003 - computes file hash', () {
+    test('004. computes file hash', () {
       const content = '{title: Test}';
       final result = parser.parse(content, filePath: 'test.iclf');
       expect(result.fileHash, isNotNull);
     });
 
-    test('004 - fromUrl loads successfully', () async {
+    test('005. handles duplicate globals (keeps first)', () {
+      const content = '{title: Test}\n{key: C}\n{key: Am}\n[C]Lyric';
+      final result = parser.parse(content);
+      expect(result.status, ParseStatus.recoverable);
+      expect(result.warnings,
+          contains('Duplicate global directive {key: Am}; keeping first.'));
+      expect(result.song?.key, 'C');
+    });
+
+    test('006. handles late globals (warns but applies)', () {
+      const content = '{title: Test}\n{section: Verse}\n[C]Lyric\n{key: C}';
+      final result = parser.parse(content);
+      expect(result.status, ParseStatus.recoverable);
+      expect(result.warnings,
+          contains('Late global directive {key: C}; applied song-wide.'));
+      expect(result.song?.key, 'C');
+    });
+
+    test('007. handles non-reserved directives as notes', () {
+      const content = '{title: Test}\n{key: C}\n{mood: Romantic}\n[C]Lyric';
+      final result = parser.parse(content);
+      expect(result.status, ParseStatus.valid);
+      expect(
+          result.song?.globalNotes
+              .any((note) => note.content == '{mood: Romantic}'),
+          isTrue);
+    });
+
+    test('008. handles # notes', () {
+      const content = '{title: Test}\n{key: C}\n# Strum gently\n[C]Lyric';
+      final result = parser.parse(content);
+      expect(result.status, ParseStatus.valid);
+      expect(
+          result.song?.globalNotes
+              .any((note) => note.content == 'Strum gently' && note.isHashNote),
+          isTrue);
+    });
+
+    test('009. handles chord attributes', () {
+      const content = '{title: Test}\n{key: C}\n[C:inversion,1]Lyric';
+      final result = parser.parse(content);
+      expect(result.status, ParseStatus.valid);
+      expect(result.song?.sections.first.chords.first.attributes['inversion'],
+          '1');
+    });
+
+    test('010. handles invalid chord', () {
+      const content = '{title: Test}\n{key: C}\n[Invalid]Lyric';
+      final result = parser.parse(content);
+      expect(result.status, ParseStatus.invalid);
+      expect(result.errors, contains('Invalid chord: Invalid'));
+    });
+
+    test('011. handles invalid directive value', () {
+      const content = '{title: Test}\n{key: InvalidKey}\n[C]Lyric';
+      final result = parser.parse(content);
+      expect(result.status, ParseStatus.invalid);
+      expect(result.errors.any((e) => e.contains('Invalid value for key')),
+          isTrue);
+    });
+
+    test('012. handles unicode lyrics', () {
+      const content =
+          '{title: Águas de Março}\n{key: Bb}\n[Bb7/Ab]É [Gm6]pau, é [Ebmmaj7/Gb]pedra, é o [Bb]fim do caminho,';
+      final result = parser.parse(content);
+      expect(result.status, ParseStatus.valid);
+      expect(result.song?.title, 'Águas de Março');
+      expect(result.song?.sections.first.chords.first.lyrics, 'É ');
+    });
+
+    test('013. handles Japanese lyrics', () {
+      const content =
+          '{title: 怨み節}\n{key: Am}\n[Am] [E] [Dm] Hana yo Kirei to, Odaterare,';
+      final result = parser.parse(content);
+      expect(result.status, ParseStatus.valid);
+      expect(result.song?.title, '怨み節');
+      expect(result.song?.sections.first.chords.first.lyrics,
+          ' [E] [Dm] Hana yo Kirei to, Odaterare,'); // Note: multiple chords on line
+    });
+
+    test('014. fromUrl loads successfully', () async {
       final mockClient = MockClient();
-      when(mockClient.get(Uri.parse(
-              'https://raw.githubusercontent.com/msant77/iclf-standard/refs/heads/master/directives.json')))
+      when(mockClient.get(Uri.parse('https://example.com')))
           .thenAnswer((_) async => http.Response(testJson, 200));
 
-      final urlParser = await IclfParser.fromUrl(
-          'https://raw.githubusercontent.com/msant77/iclf-standard/refs/heads/master/directives.json',
+      final urlParser = await IclfParser.fromUrl('https://example.com',
           httpClient: mockClient);
-
       expect(urlParser, isA<IclfParser>());
     });
 
-    test('005 - fromUrl throws on failure', () async {
+    test('015. fromUrl throws on failure', () async {
       final mockClient = MockClient();
-      when(mockClient.get(Uri.parse(
-              'https://raw.githubusercontent.com/msant77/iclf-standard/refs/heads/master/directives.json')))
+      when(mockClient.get(Uri.parse('https://example.com')))
           .thenAnswer((_) async => http.Response('Error', 404));
 
       expect(
-        () async => await IclfParser.fromUrl(
-            'https://raw.githubusercontent.com/msant77/iclf-standard/refs/heads/master/directives.json',
+        () async => await IclfParser.fromUrl('https://example.com',
             httpClient: mockClient),
         throwsException,
       );
+    });
+
+    test('016. handles regex from json (creation_date)', () {
+      const content =
+          '{title: Test}\n{key: C}\n{creation_date: 2025-04-28}\n[C]Lyric';
+      final result = parser.parse(content);
+      expect(result.status, ParseStatus.valid);
+      expect(result.song?.globals['creation_date'], '2025-04-28');
+    });
+
+    test('017. invalid regex from json (creation_date)', () {
+      const content =
+          '{title: Test}\n{key: C}\n{creation_date: invalid}\n[C]Lyric';
+      final result = parser.parse(content);
+      expect(result.status, ParseStatus.invalid);
+      expect(
+          result.errors
+              .any((e) => e.contains('Invalid value for creation_date')),
+          isTrue);
+    });
+
+    test('018. handles integer from json (tempo)', () {
+      const content = '{title: Test}\n{key: C}\n{tempo: 80}\n[C]Lyric';
+      final result = parser.parse(content);
+      expect(result.status, ParseStatus.valid);
+      expect(result.song?.globals['tempo'], '80');
+    });
+
+    test('019. invalid integer from json (tempo)', () {
+      const content = '{title: Test}\n{key: C}\n{tempo: 10}\n[C]Lyric';
+      final result = parser.parse(content);
+      expect(result.status, ParseStatus.invalid);
+      expect(result.errors.any((e) => e.contains('Invalid integer for tempo')),
+          isTrue);
     });
   });
 }
