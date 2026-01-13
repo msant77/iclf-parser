@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:iclf_parser/iclf_parser.dart';
 import 'package:test/test.dart';
 import 'package:mockito/annotations.dart';
@@ -11,8 +12,8 @@ void main() {
   group('From URL', () {
     test('018 fromUrl loads successfully', () async {
       final mockClient = MockClient();
-      when(mockClient.get(Uri.parse('https://example.com')))
-          .thenAnswer((_) async => http.Response(getTestJson(), 200));
+      when(mockClient.get(Uri.parse('https://example.com'))).thenAnswer(
+          (_) async => http.Response.bytes(utf8.encode(getTestJson()), 200));
       final urlParser = await IclfParser.fromUrl('https://example.com',
           httpClient: mockClient);
       expect(urlParser, isA<IclfParser>());

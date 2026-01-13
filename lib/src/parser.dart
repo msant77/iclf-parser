@@ -41,7 +41,7 @@ class IclfParser {
 
     final directiveRegex = RegExp(r'^\{([^:]+):\s*(.+)\}$');
     final chordRegex =
-        RegExp(r'\[([^\]:]+)(?::([^\]]+))?\](.+)'); // Unicode-safe
+        RegExp(r'\[([^\]:]+)(?::([^\]]+))?\]([^\[]+)'); // Unicode-safe
     final noteRegex = RegExp(r'^# (.+)');
     final chordPattern =
         RegExp(_chordsConfig['validation']['chord']['pattern']);
