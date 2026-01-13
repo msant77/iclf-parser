@@ -108,13 +108,14 @@ class IclfParser {
           final lyrics = match.group(3)!.trim();
           final attributes = <String, String>{};
           if (attrStr != null) {
-            final attrPairs = attrStr.split(RegExp(r'(?<!,)\s*,\s*(?![^,]*$)'));
-            for (var pair in attrPairs) {
-              final parts = pair.split(':');
-              if (parts.length == 2) {
-                attributes[parts[0].trim()] = parts[1].trim();
+            final attrParts = attrStr.split(',');
+            for (int i = 0; i < attrParts.length; i += 2) {
+              if (i + 1 < attrParts.length) {
+                final attrKey = attrParts[i].trim();
+                final attrValue = attrParts[i + 1].trim();
+                attributes[attrKey] = attrValue;
               } else {
-                errors.add('Malformed chord attribute: $pair');
+                errors.add('Malformed chord attribute: unpaired key at end');
                 malformed = true;
               }
             }
@@ -185,8 +186,7 @@ class IclfParser {
           Song(globalDirectives['title'] ?? '', globalDirectives['key'] ?? 'C');
       song.globals.addAll(globalDirectives);
       song.globalNotes.addAll(notes);
-      song.sections
-          .addAll(sections); // No cast needed - sections is List<Section>
+      song.sections.addAll(sections);
       for (var sec in sections) {
         for (var dir in sec.localDirectives) {
           if (dir.name == 'repeat') {

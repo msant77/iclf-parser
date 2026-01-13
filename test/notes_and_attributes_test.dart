@@ -32,6 +32,6 @@ void main() {
       expect(result.status, ParseStatus.valid);
       expect(result.song?.sections.first.chords.first.attributes['inversion'],
           '1');
-    }, tags: ['tag2']);
+    }, tags: ['tag1']);
   });
 }
