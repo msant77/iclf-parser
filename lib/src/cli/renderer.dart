@@ -1,19 +1,38 @@
 import 'dart:math';
 import '../models.dart';
 
-/// Result of rendering a single line of chords with lyrics
+/// Result of rendering a single line of chords with lyrics.
+///
+/// Contains the chord line (displayed above) and the corresponding
+/// lyric line (displayed below) for a segment of the song.
 class RenderLineResult {
+  /// The chord names positioned above their corresponding lyrics.
   final String chordLine;
+
+  /// The lyrics positioned below their corresponding chords.
   final String lyricLine;
+
+  /// Creates a render result with the given [chordLine] and [lyricLine].
   RenderLineResult(this.chordLine, this.lyricLine);
 }
 
-/// Renders ICLF Song objects as traditional chord sheets
+/// Renders ICLF [Song] objects as traditional chord sheets
 /// with chords displayed above corresponding lyrics.
+///
+/// Example output:
+/// ```
+/// [Verse 1]
+/// G       G7         C         G
+/// Amazing grace, how sweet the sound,
+/// ```
 class IclfRenderer {
+  /// Maximum line width before wrapping. Defaults to 80 characters.
   final int maxWidth;
+
+  /// Whether to use compact mode (less whitespace). Defaults to false.
   final bool compact;
 
+  /// Creates a renderer with optional [maxWidth] and [compact] settings.
   IclfRenderer({
     this.maxWidth = 80,
     this.compact = false,

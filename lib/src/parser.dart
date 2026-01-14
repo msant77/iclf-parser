@@ -6,17 +6,58 @@ import 'package:path/path.dart' as p;
 import 'models.dart';
 import 'validator.dart';
 
+/// Parser for Inline Chorded Lyrics Format (ICLF) files.
+///
+/// Parses ICLF content and validates it against the official specification
+/// loaded from a JSON configuration file.
+///
+/// Example usage:
+/// ```dart
+/// // Load parser with spec from URL
+/// final parser = await IclfParser.fromUrl(
+///   'https://raw.githubusercontent.com/msant77/iclf-standard/master/directives.json'
+/// );
+///
+/// // Parse content
+/// final result = parser.parse(iclfContent);
+/// if (result.status == ParseStatus.valid) {
+///   print('Title: ${result.song!.title}');
+/// }
+/// ```
 class IclfParser {
-  late Map<String, dynamic> _directivesConfig;
+  late Map<String, Map<String, dynamic>> _directivesConfig;
   late Map<String, dynamic> _chordsConfig;
   final Validator _validator = Validator();
 
+  /// Creates a parser with the given ICLF specification JSON.
+  ///
+  /// The [directivesJsonContent] should be the contents of a valid
+  /// ICLF directives.json file defining directive and chord rules.
+  ///
+  /// Throws [FormatException] if the JSON is invalid.
   IclfParser(String directivesJsonContent) {
-    final json = jsonDecode(directivesJsonContent);
-    _directivesConfig = {for (var d in json['directives']) d['name']: d};
-    _chordsConfig = json['chords'];
+    final json = jsonDecode(directivesJsonContent) as Map<String, dynamic>;
+    final directives = json['directives'] as List<dynamic>;
+    _directivesConfig = {
+      for (final d in directives)
+        (d as Map<String, dynamic>)['name'] as String: d
+    };
+    _chordsConfig = json['chords'] as Map<String, dynamic>;
   }
 
+  /// Creates a parser by fetching the ICLF specification from a URL.
+  ///
+  /// Loads the directives.json from [url] and initializes the parser.
+  /// An optional [httpClient] can be provided for testing.
+  ///
+  /// Throws [Exception] if the HTTP request fails.
+  ///
+  /// Example:
+  /// ```dart
+  /// final parser = await IclfParser.fromUrl(
+  ///   'https://raw.githubusercontent.com/msant77/iclf-standard/master/directives.json'
+  /// );
+  /// ```
   static Future<IclfParser> fromUrl(String url,
       {http.Client? httpClient}) async {
     final client = httpClient ?? http.Client();
@@ -28,6 +69,18 @@ class IclfParser {
     }
   }
 
+  /// Parses ICLF content and returns a [ParseResult].
+  ///
+  /// The [content] is the raw ICLF file content to parse.
+  /// Optionally provide [filePath] to enable file hash computation.
+  ///
+  /// Returns a [ParseResult] containing:
+  /// - [ParseResult.status]: Whether the file is valid, invalid, or recoverable
+  /// - [ParseResult.song]: The parsed song (null if invalid)
+  /// - [ParseResult.errors]: List of error messages
+  /// - [ParseResult.warnings]: List of warning messages
+  /// - [ParseResult.fixedContent]: Auto-corrected content (for recoverable files)
+  /// - [ParseResult.fileHash]: MD5 hash of content (if filePath provided)
   ParseResult parse(String content, {String? filePath}) {
     final lines = content.split('\n');
     final errors = <String>[];
@@ -43,8 +96,9 @@ class IclfParser {
     final chordRegex =
         RegExp(r'\[([^\]:]+)(?::([^\]]+))?\]([^\[]*)'); // Unicode-safe, allows empty lyrics
     final noteRegex = RegExp(r'^# (.+)');
-    final chordPattern =
-        RegExp(_chordsConfig['validation']['chord']['pattern']);
+    final validation = _chordsConfig['validation'] as Map<String, dynamic>;
+    final chordValidation = validation['chord'] as Map<String, dynamic>;
+    final chordPattern = RegExp(chordValidation['pattern'] as String);
 
     for (var line in lines) {
       line = line.trim();
@@ -60,11 +114,12 @@ class IclfParser {
           continue;
         }
         if (_directivesConfig.containsKey(key)) {
-          final config = _directivesConfig[key];
+          final config = _directivesConfig[key]!;
           if (!_validator.validateDirective(config, value, errors)) {
             malformed = true;
           }
-          if (config['scope'].contains('global')) {
+          final scope = config['scope'] as String;
+          if (scope.contains('global')) {
             if (seenGlobals.containsKey(key)) {
               warnings.add(
                   'Duplicate global directive {$key: $value}; keeping first.');
@@ -102,7 +157,7 @@ class IclfParser {
           currentSection = Section('Intro');
           sections.add(currentSection);
         }
-        for (var match in chordMatches) {
+        for (final match in chordMatches) {
           final chordName = match.group(1)!.trim();
           final attrStr = match.group(2);
           final lyrics = match.group(3)?.trim() ?? '';
@@ -124,17 +179,26 @@ class IclfParser {
           if (chordName.isNotEmpty && !_validator.validateChord(chordName, chordPattern, errors)) {
             malformed = true;
           }
-          for (var entry in attributes.entries) {
-            final attrConfig = _chordsConfig['attributes'].firstWhere(
-              (a) => a['name'] == entry.key,
-              orElse: () => null,
-            );
+          final chordAttributes = _chordsConfig['attributes'] as List<dynamic>;
+          for (final entry in attributes.entries) {
+            Map<String, dynamic>? attrConfig;
+            for (final a in chordAttributes) {
+              final attr = a as Map<String, dynamic>;
+              if (attr['name'] == entry.key) {
+                attrConfig = attr;
+                break;
+              }
+            }
             if (attrConfig == null) {
               errors.add('Unknown chord attribute: ${entry.key}');
               malformed = true;
-            } else if (!_validator.validateAttribute(
-                attrConfig['validation'], entry.value, errors)) {
-              malformed = true;
+            } else {
+              final attrValidation =
+                  attrConfig['validation'] as Map<String, dynamic>;
+              if (!_validator.validateAttribute(
+                  attrValidation, entry.value, errors)) {
+                malformed = true;
+              }
             }
           }
           currentSection.chords.add(Chord(chordName, attributes, lyrics));
@@ -154,17 +218,19 @@ class IclfParser {
 
     String? fixedContent = content;
     ParseStatus status = ParseStatus.valid;
-    List<String> missingRequired = [];
+    final missingRequired = <String>[];
 
-    for (var configEntry in _directivesConfig.entries) {
-      var config = configEntry.value;
-      if (config['required'] == true &&
-          config['scope'].contains('global') &&
+    for (final configEntry in _directivesConfig.entries) {
+      final config = configEntry.value;
+      final isRequired = config['required'] as bool? ?? false;
+      final configScope = config['scope'] as String;
+      if (isRequired &&
+          configScope.contains('global') &&
           !globalDirectives.containsKey(configEntry.key)) {
         if (config.containsKey('default')) {
           final defaultValue = config['default'] as String;
           fixedContent =
-              '{${configEntry.key}: $defaultValue}\n' + fixedContent!;
+              '{${configEntry.key}: $defaultValue}\n$fixedContent';
           warnings.add('Added missing {${configEntry.key}: $defaultValue}');
           globalDirectives[configEntry.key] = defaultValue;
           if (status == ParseStatus.valid) status = ParseStatus.recoverable;
@@ -194,8 +260,8 @@ class IclfParser {
       song.globals.addAll(globalDirectives);
       song.globalNotes.addAll(notes);
       song.sections.addAll(sections);
-      for (var sec in sections) {
-        for (var dir in sec.localDirectives) {
+      for (final sec in sections) {
+        for (final dir in sec.localDirectives) {
           if (dir.name == 'repeat') {
             warnings.add(
                 'Repeat directive noted for section ${sec.name}: ${dir.value}');
@@ -220,6 +286,10 @@ class IclfParser {
     );
   }
 
+  /// Generates a temporary file path for storing auto-corrected content.
+  ///
+  /// Given an [originalPath] like "song.iclf", returns "song.iclf.temp".
+  /// Use this to save [ParseResult.fixedContent] for recoverable files.
   String getTempFilePath(String originalPath) {
     return p.setExtension(originalPath, '.iclf.temp');
   }
