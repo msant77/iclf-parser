@@ -1,6 +1,11 @@
 # ICLF Parser - Feature Roadmap
 
-## Priority 1: CLI Foundation (Completed)
+## Priority 1: ICLF Parser Lib to be used in Chordo
+
+- [ ] Create a package that exports a parser for ICLF files
+- [ ] Meet all pub.dev requirements and recommendations
+
+## Priority 2: CLI Foundation (Completed)
 
 - [x] Add `args` package dependency for CLI argument parsing
 - [x] Create `bin/iclf.dart` entry point
@@ -10,7 +15,7 @@
 - [x] Add `render` subcommand: `iclf render <file.iclf>`
 - [x] Add CLI tests in `test/cli/renderer_test.dart`
 
-## Priority 2: Renderer Features (Completed)
+## Priority 3: Renderer Features (Completed)
 
 - [x] Chord-above-lyrics alignment algorithm
 - [x] Section headers with `[Section Name]` format
@@ -19,7 +24,7 @@
 - [x] Line wrapping at configurable width (--width flag)
 - [x] Compact mode (--compact flag)
 
-## Priority 3: CLI Polish (Completed)
+## Priority 4: CLI Polish (Completed)
 
 - [x] --output flag for file output
 - [x] --config flag for custom directives.json (URL or local file)
@@ -27,24 +32,26 @@
 - [x] Error messages with clear guidance
 - [x] Warning display for recoverable parse issues
 
-## Priority 4: Future Enhancements (Backlog)
+## Priority 5: Core Parser Improvements
+
+- [ ] Improved error messages with line numbers
+- [ ] Partial parsing (return what was parsed even on error)
+
+## Priority 6: Future Enhancements
 
 - [ ] `validate` subcommand (validation without rendering)
 - [ ] Color output with ANSI codes (--color flag)
-- [ ] JSON output format (--format json)
 - [ ] Transposition support (--transpose +2)
-- [ ] Multiple file processing (glob patterns)
+
+## Last Priority: Desirable Features (Backlog)
+
+- [ ] Streaming parser for large files
+- [ ] Custom directive registration API
+- [ ] JSON output format (--format json)
 - [ ] Stdin input support (pipe mode)
 - [ ] Watch mode for live preview during editing
 - [ ] HTML export format
 - [ ] PDF export format
-
-## Priority 5: Core Parser Improvements (Backlog)
-
-- [ ] Improved error messages with line numbers
-- [ ] Partial parsing (return what was parsed even on error)
-- [ ] Streaming parser for large files
-- [ ] Custom directive registration API
 
 ## CLI Usage
 
