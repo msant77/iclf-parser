@@ -80,3 +80,28 @@ bin/
 ### Test Structure
 
 Tests in `test/` are organized by functionality with fixture data loaded from `test/fixtures/directives_json.dart`. The `from_url_test.dart` uses Mockito to mock HTTP client (mocks generated in `iclf_parser_test.mocks.dart`).
+
+## Quality Standards
+
+See **PROJECT_CONSTITUTION.md** for comprehensive rules on:
+- pub.dev requirements and recommendations
+- Lint rules and zero-tolerance policy
+- Security rules (input validation, network security)
+- Testing requirements (95% coverage minimum)
+- Git practices and versioning
+
+## Local CI
+
+Run checks locally before committing to save CI tokens:
+
+```bash
+./scripts/ci.sh          # Full suite: format, analyze, test, coverage
+./scripts/ci.sh quick    # Fast check: format + analyze only
+./scripts/ci.sh test     # Run tests with coverage
+./scripts/ci.sh help     # Show all commands
+```
+
+Setup pre-commit hooks:
+```bash
+./scripts/setup-hooks.sh
+```
