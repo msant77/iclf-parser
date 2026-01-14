@@ -41,7 +41,7 @@ class IclfParser {
 
     final directiveRegex = RegExp(r'^\{([^:]+):\s*(.+)\}$');
     final chordRegex =
-        RegExp(r'\[([^\]:]+)(?::([^\]]+))?\]([^\[]+)'); // Unicode-safe
+        RegExp(r'\[([^\]:]+)(?::([^\]]+))?\]([^\[]*)'); // Unicode-safe, allows empty lyrics
     final noteRegex = RegExp(r'^# (.+)');
     final chordPattern =
         RegExp(_chordsConfig['validation']['chord']['pattern']);
@@ -105,7 +105,7 @@ class IclfParser {
         for (var match in chordMatches) {
           final chordName = match.group(1)!.trim();
           final attrStr = match.group(2);
-          final lyrics = match.group(3)!.trim();
+          final lyrics = match.group(3)?.trim() ?? '';
           final attributes = <String, String>{};
           if (attrStr != null) {
             final attrParts = attrStr.split(',');
@@ -120,7 +120,8 @@ class IclfParser {
               }
             }
           }
-          if (!_validator.validateChord(chordName, chordPattern, errors)) {
+          // Skip validation for empty chord names (plain lyrics)
+          if (chordName.isNotEmpty && !_validator.validateChord(chordName, chordPattern, errors)) {
             malformed = true;
           }
           for (var entry in attributes.entries) {
@@ -141,8 +142,14 @@ class IclfParser {
         continue;
       }
 
-      errors.add('Malformed line: $line');
-      malformed = true;
+      // Line doesn't match directive, note, or chord patterns
+      // Treat as plain lyrics (continuation line)
+      if (currentSection == null) {
+        currentSection = Section('Intro');
+        sections.add(currentSection);
+      }
+      // Add as a chord with empty name to represent plain lyrics
+      currentSection.chords.add(Chord('', {}, line));
     }
 
     String? fixedContent = content;

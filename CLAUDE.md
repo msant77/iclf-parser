@@ -28,9 +28,25 @@ dart analyze
 dart run build_runner build
 ```
 
+## CLI Usage
+
+```bash
+# Render an ICLF file as a chord sheet
+dart run bin/iclf.dart render song.iclf
+
+# With options
+dart run bin/iclf.dart render song.iclf --width 120 --compact
+dart run bin/iclf.dart render song.iclf --output rendered.txt
+dart run bin/iclf.dart render song.iclf --config test/fixtures/directives.json
+
+# Help
+dart run bin/iclf.dart --help
+dart run bin/iclf.dart render --help
+```
+
 ## Architecture
 
-The library follows a clean separation between models, parsing, and validation:
+The library follows a clean separation between models, parsing, validation, and CLI:
 
 ```
 lib/
@@ -38,7 +54,13 @@ lib/
 └── src/
     ├── models.dart       # Data classes: Song, Section, Chord, Note, Directive, ParseResult, ParseStatus
     ├── parser.dart       # IclfParser class - core parsing logic
-    └── validator.dart    # Validator class - directive and chord validation
+    ├── validator.dart    # Validator class - directive and chord validation
+    └── cli/
+        ├── renderer.dart     # IclfRenderer - chord sheet formatting
+        └── cli_runner.dart   # CLI command parsing and execution
+
+bin/
+└── iclf.dart             # CLI entry point
 ```
 
 ### Key Classes
