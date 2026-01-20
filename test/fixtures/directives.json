@@ -147,8 +147,8 @@
     "validation": {
       "chord": {
         "type": "string",
-        "pattern": "^(?:N\\.C\\.|[A-G][#b]?(?:m|min)?(?:maj|dim|°|ø|\\+|aug)?(?:sus[24])?(?:6|7|9|11|13)?(?:sus[24])?(?:add(?:9|11|13))?(?:(?:\\()?[b#](?:5|9|11|13)(?:\\))?)*(?:/[A-G][#b]?)?)$",
-        "description": "Must be a valid chord: N.C. (no chord), or root (A-G), optional accidental (# or b), optional minor (m or min), optional quality (maj, dim, °, ø, +, aug), optional suspension (sus2, sus4), optional extension (6, 7, 9, 11, 13), optional add (add9, add11, add13), optional alterations (b5, #5, b9, #9, #11, b13 with optional parentheses), optional bass note (/E). Examples: C, Am, Cmaj7, Cmmaj7, C7sus4, Cadd9, C7b9, Dm7b5, Bb7/Ab, N.C."
+        "pattern": "^(?:N\\.C\\.|[A-G][#b]?(?:m|min)?(?:maj|dim|°|˚|ø|\\+|aug)?(?:sus[24])?(?:6|7|9|11|13)?(?:sus[24])?(?:add(?:9|11|13))?(?:(?:\\()?[b#](?:5|9|11|13)(?:\\))?)*(?:/[A-G][#b]?)?)$",
+        "description": "Must be a valid chord: N.C. (no chord), or root (A-G), optional accidental (# or b), optional minor (m or min), optional quality (maj, dim, °, ˚, ø, +, aug), optional suspension (sus2, sus4), optional extension (6, 7, 9, 11, 13), optional add (add9, add11, add13), optional alterations (b5, #5, b9, #9, #11, b13 with optional parentheses), optional bass note (/E). Examples: C, Am, Cmaj7, Cmmaj7, C7sus4, Cadd9, C7b9, Dm7b5, Bb7/Ab, N.C."
       }
     },
     "attributes": [

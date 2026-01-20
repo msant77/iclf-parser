@@ -64,9 +64,9 @@ void main() {
   });
 
   group('Chord Pattern Validation', () {
-    // Pattern from directives.json
+    // Pattern from directives.json (must match test/fixtures/directives.json)
     final chordPattern = RegExp(
-        r'^(?:N\.C\.|[A-G][#b]?(?:m|min)?(?:maj|dim|°|ø|\+|aug)?(?:sus[24])?(?:6|7|9|11|13)?(?:sus[24])?(?:add(?:9|11|13))?(?:(?:\()?[b#](?:5|9|11|13)(?:\))?)*(?:/[A-G][#b]?)?)$');
+        r'^(?:N\.C\.|[A-G][#b]?(?:m|min)?(?:maj|dim|°|˚|ø|\+|aug)?(?:sus[24])?(?:6|7|9|11|13)?(?:sus[24])?(?:add(?:9|11|13))?(?:(?:\()?[b#](?:5|9|11|13)(?:\))?)*(?:/[A-G][#b]?)?)$');
 
     final validChords = [
       // Basic triads
