@@ -151,23 +151,33 @@ class IclfParser {
         continue;
       }
 
-      final chordMatches = chordRegex.allMatches(line);
+      final chordMatches = chordRegex.allMatches(line).toList();
       if (chordMatches.isNotEmpty) {
         if (currentSection == null) {
           currentSection = Section('Intro');
           sections.add(currentSection);
         }
-        for (final match in chordMatches) {
+
+        // Capture leading text before the first chord
+        final firstMatchStart = chordMatches.first.start;
+        if (firstMatchStart > 0) {
+          final leadingText = line.substring(0, firstMatchStart);
+          currentSection.chords.add(Chord('', {}, leadingText));
+        }
+
+        for (var i = 0; i < chordMatches.length; i++) {
+          final match = chordMatches[i];
+          final isLast = i == chordMatches.length - 1;
           final chordName = match.group(1)!.trim();
           final attrStr = match.group(2);
-          final lyrics = match.group(3)?.trim() ?? '';
+          final lyrics = match.group(3) ?? '';
           final attributes = <String, String>{};
           if (attrStr != null) {
             final attrParts = attrStr.split(',');
-            for (int i = 0; i < attrParts.length; i += 2) {
-              if (i + 1 < attrParts.length) {
-                final attrKey = attrParts[i].trim();
-                final attrValue = attrParts[i + 1].trim();
+            for (int j = 0; j < attrParts.length; j += 2) {
+              if (j + 1 < attrParts.length) {
+                final attrKey = attrParts[j].trim();
+                final attrValue = attrParts[j + 1].trim();
                 attributes[attrKey] = attrValue;
               } else {
                 errors.add('Malformed chord attribute: unpaired key at end');
@@ -201,7 +211,8 @@ class IclfParser {
               }
             }
           }
-          currentSection.chords.add(Chord(chordName, attributes, lyrics));
+          currentSection.chords.add(Chord(chordName, attributes, lyrics,
+              isLineEnd: isLast));
         }
         continue;
       }
@@ -213,7 +224,7 @@ class IclfParser {
         sections.add(currentSection);
       }
       // Add as a chord with empty name to represent plain lyrics
-      currentSection.chords.add(Chord('', {}, line));
+      currentSection.chords.add(Chord('', {}, line, isLineEnd: true));
     }
 
     String? fixedContent = content;

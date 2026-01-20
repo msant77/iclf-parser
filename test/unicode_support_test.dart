@@ -23,7 +23,7 @@ void main() {
       expect(result.status, ParseStatus.valid);
       expect(result.song?.title, '怨み節');
       expect(result.song?.sections.first.chords.last.lyrics,
-          'Hana yo Kirei to, Odaterare,');
+          ' Hana yo Kirei to, Odaterare,');
     });
   });
 }

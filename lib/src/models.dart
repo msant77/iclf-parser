@@ -66,8 +66,14 @@ class Chord {
   /// Supports Unicode characters for international lyrics.
   final String lyrics;
 
-  /// Creates a chord with the given [name], [attributes], and [lyrics].
-  Chord(this.name, this.attributes, this.lyrics);
+  /// Whether this chord is the last one on its input line.
+  ///
+  /// Used by the renderer to preserve original line breaks.
+  final bool isLineEnd;
+
+  /// Creates a chord with the given [name], [attributes], [lyrics],
+  /// and optional [isLineEnd] flag.
+  Chord(this.name, this.attributes, this.lyrics, {this.isLineEnd = false});
 }
 
 /// A note or comment in an ICLF file.

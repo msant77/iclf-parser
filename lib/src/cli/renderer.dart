@@ -136,26 +136,48 @@ class IclfRenderer {
   }
 
   RenderLineResult _renderChordLine(List<Chord> chords) {
-    final chordBuffer = StringBuffer();
+    // Build complete lyrics string and track chord positions
     final lyricBuffer = StringBuffer();
+    final chordPositions = <(int, String)>[]; // (position, chordText)
 
     for (final chord in chords) {
       final chordText = _formatChord(chord);
       final lyrics = chord.lyrics;
 
-      // Calculate segment width - ensure at least 1 space between segments
-      final chordWidth = chordText.length;
-      final lyricWidth = lyrics.length;
-      final segmentWidth = max(chordWidth + 1, lyricWidth + 1);
+      // Record chord position before adding lyrics (only for non-empty chords)
+      if (chordText.isNotEmpty) {
+        chordPositions.add((lyricBuffer.length, chordText));
+      }
 
-      // Pad chord and lyrics to segment width
-      chordBuffer.write(chordText.padRight(segmentWidth));
-      lyricBuffer.write(lyrics.padRight(segmentWidth));
+      lyricBuffer.write(lyrics);
+    }
+
+    // Build chord line by placing chords at their positions
+    final lyricLine = lyricBuffer.toString();
+    final chordLine = StringBuffer();
+    var currentPos = 0;
+
+    for (final (position, chordText) in chordPositions) {
+      // Add spaces to reach the chord position
+      if (position > currentPos) {
+        chordLine.write(' ' * (position - currentPos));
+        currentPos = position;
+      }
+
+      // Write the chord with at least 1 space after (unless at end)
+      chordLine.write(chordText);
+      currentPos += chordText.length;
+
+      // Add minimum spacing between chords
+      if (currentPos < lyricLine.length) {
+        chordLine.write(' ');
+        currentPos++;
+      }
     }
 
     return RenderLineResult(
-      chordBuffer.toString().trimRight(),
-      lyricBuffer.toString().trimRight(),
+      chordLine.toString().trimRight(),
+      lyricLine.trimRight(),
     );
   }
 
@@ -185,8 +207,8 @@ class IclfRenderer {
     var currentWidth = 0;
 
     for (final chord in chords) {
-      // Plain lyrics (empty chord name) get their own line
-      if (chord.name.isEmpty) {
+      // Plain lyrics (empty chord name) with isLineEnd get their own line
+      if (chord.name.isEmpty && chord.isLineEnd) {
         if (currentLine.isNotEmpty) {
           lines.add(currentLine);
           currentLine = [];
@@ -208,8 +230,8 @@ class IclfRenderer {
       currentLine.add(chord);
       currentWidth += segmentWidth;
 
-      // Check for natural line breaks (phrase endings)
-      if (_isPhraseBoundary(chord.lyrics)) {
+      // Respect original line breaks from input
+      if (chord.isLineEnd) {
         lines.add(currentLine);
         currentLine = [];
         currentWidth = 0;
@@ -227,16 +249,6 @@ class IclfRenderer {
     final chordWidth = _formatChord(chord).length + 1;
     final lyricWidth = chord.lyrics.length + 1;
     return max(chordWidth, lyricWidth);
-  }
-
-  bool _isPhraseBoundary(String lyrics) {
-    final trimmed = lyrics.trimRight();
-    if (trimmed.isEmpty) return false;
-
-    // Check for sentence-ending punctuation
-    const endings = ['.', '!', '?', ','];
-    final lastChar = trimmed[trimmed.length - 1];
-    return endings.contains(lastChar);
   }
 
   String _formatNote(Note note) {
