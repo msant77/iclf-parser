@@ -152,8 +152,18 @@ class IclfRenderer {
       lyricBuffer.write(lyrics);
     }
 
-    // Build chord line by placing chords at their positions
     final lyricLine = lyricBuffer.toString();
+
+    // Check if this is a chord-only line (lyrics are just whitespace)
+    final isChordOnlyLine = lyricLine.trim().isEmpty;
+
+    if (isChordOnlyLine) {
+      // For chord-only lines, render chords with single space between them
+      final chordLine = chordPositions.map((p) => p.$2).join(' ');
+      return RenderLineResult(chordLine, '');
+    }
+
+    // Build chord line by placing chords at their positions
     final chordLine = StringBuffer();
     var currentPos = 0;
 

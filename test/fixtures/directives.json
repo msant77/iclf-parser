@@ -198,7 +198,552 @@
           "description": "Must be one or more musical notes separated by hyphens (A-G, optional # or b) (e.g., G, A-C-E)."
         }
       }
+    ],
+    "variations": [
+      {
+        "name": "root",
+        "description": "Root notes A through G",
+        "values": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G"
+        ],
+        "tags": [
+          "basic"
+        ]
+      },
+      {
+        "name": "sharp",
+        "description": "Sharp accidental",
+        "symbol": "#",
+        "examples": [
+          "C#",
+          "F#",
+          "G#",
+          "A#",
+          "D#",
+          "E#",
+          "B#"
+        ],
+        "tags": [
+          "accidental"
+        ]
+      },
+      {
+        "name": "flat",
+        "description": "Flat accidental",
+        "symbol": "b",
+        "examples": [
+          "Bb",
+          "Eb",
+          "Ab",
+          "Db",
+          "Gb",
+          "Cb",
+          "Fb"
+        ],
+        "tags": [
+          "accidental"
+        ]
+      },
+      {
+        "name": "minor-m",
+        "description": "Minor chord using m suffix",
+        "symbol": "m",
+        "examples": [
+          "Am",
+          "Dm",
+          "Em",
+          "Bm",
+          "F#m",
+          "C#m",
+          "Gm"
+        ],
+        "tags": [
+          "minor",
+          "quality"
+        ]
+      },
+      {
+        "name": "minor-min",
+        "description": "Minor chord using min suffix",
+        "symbol": "min",
+        "examples": [
+          "Amin",
+          "Dmin",
+          "Emin"
+        ],
+        "tags": [
+          "minor",
+          "quality"
+        ]
+      },
+      {
+        "name": "diminished-dim",
+        "description": "Diminished chord using dim suffix",
+        "symbol": "dim",
+        "examples": [
+          "Cdim",
+          "Bdim",
+          "Fdim",
+          "Cdim7"
+        ],
+        "tags": [
+          "diminished",
+          "quality"
+        ]
+      },
+      {
+        "name": "diminished-degree",
+        "description": "Diminished chord using ° (degree sign U+00B0)",
+        "symbol": "°",
+        "examples": [
+          "C°",
+          "B°",
+          "F°",
+          "C°7"
+        ],
+        "tags": [
+          "diminished",
+          "quality"
+        ]
+      },
+      {
+        "name": "diminished-ring",
+        "description": "Diminished chord using ˚ (ring above U+02DA)",
+        "symbol": "˚",
+        "examples": [
+          "C˚",
+          "B˚",
+          "F˚",
+          "C˚7"
+        ],
+        "tags": [
+          "diminished",
+          "quality"
+        ]
+      },
+      {
+        "name": "half-diminished-ø",
+        "description": "Half-diminished chord using ø symbol",
+        "symbol": "ø",
+        "examples": [
+          "Cø",
+          "Dø7",
+          "F#ø",
+          "Bø"
+        ],
+        "tags": [
+          "half-diminished",
+          "quality"
+        ]
+      },
+      {
+        "name": "half-diminished-m7b5",
+        "description": "Half-diminished chord using m7b5 notation",
+        "symbol": "m7b5",
+        "examples": [
+          "Dm7b5",
+          "F#m7b5",
+          "Bm7b5",
+          "Em7b5"
+        ],
+        "tags": [
+          "half-diminished",
+          "quality"
+        ]
+      },
+      {
+        "name": "augmented-aug",
+        "description": "Augmented chord using aug suffix",
+        "symbol": "aug",
+        "examples": [
+          "Caug",
+          "Gaug",
+          "Eaug"
+        ],
+        "tags": [
+          "augmented",
+          "quality"
+        ]
+      },
+      {
+        "name": "augmented-plus",
+        "description": "Augmented chord using + symbol",
+        "symbol": "+",
+        "examples": [
+          "C+",
+          "G+",
+          "E+"
+        ],
+        "tags": [
+          "augmented",
+          "quality"
+        ]
+      },
+      {
+        "name": "major",
+        "description": "Explicit major quality",
+        "symbol": "maj",
+        "examples": [
+          "Cmaj",
+          "Cmaj7",
+          "Cmaj9",
+          "Bbmaj7",
+          "Ebmaj7",
+          "Fmaj7"
+        ],
+        "tags": [
+          "major",
+          "quality"
+        ]
+      },
+      {
+        "name": "minor-major",
+        "description": "Minor chord with major 7th",
+        "symbol": "mmaj7",
+        "examples": [
+          "Cmmaj7",
+          "Ammaj7",
+          "Ebmmaj7",
+          "Ebmmaj7/Gb"
+        ],
+        "tags": [
+          "minor-major",
+          "quality"
+        ]
+      },
+      {
+        "name": "sus2",
+        "description": "Suspended 2nd - replaces 3rd with 2nd",
+        "symbol": "sus2",
+        "examples": [
+          "Csus2",
+          "Dsus2",
+          "Asus2",
+          "Gsus2"
+        ],
+        "tags": [
+          "suspended"
+        ]
+      },
+      {
+        "name": "sus4",
+        "description": "Suspended 4th - replaces 3rd with 4th",
+        "symbol": "sus4",
+        "examples": [
+          "Csus4",
+          "Dsus4",
+          "Gsus4",
+          "G7sus4",
+          "D7sus4"
+        ],
+        "tags": [
+          "suspended"
+        ]
+      },
+      {
+        "name": "6th",
+        "description": "6th chord - adds major 6th to triad",
+        "symbol": "6",
+        "examples": [
+          "C6",
+          "Am6",
+          "Gm6",
+          "Dm6",
+          "Ebm6"
+        ],
+        "tags": [
+          "extension"
+        ]
+      },
+      {
+        "name": "7th",
+        "description": "7th chord - adds 7th degree",
+        "symbol": "7",
+        "examples": [
+          "C7",
+          "Cm7",
+          "Cmaj7",
+          "Cdim7",
+          "Am7",
+          "G7",
+          "Bb7"
+        ],
+        "tags": [
+          "extension"
+        ]
+      },
+      {
+        "name": "9th",
+        "description": "9th chord - extends through 9th degree",
+        "symbol": "9",
+        "examples": [
+          "C9",
+          "Cm9",
+          "Cmaj9",
+          "G9",
+          "Am9"
+        ],
+        "tags": [
+          "extension"
+        ]
+      },
+      {
+        "name": "11th",
+        "description": "11th chord - extends through 11th degree",
+        "symbol": "11",
+        "examples": [
+          "C11",
+          "Cm11",
+          "G11",
+          "Am11"
+        ],
+        "tags": [
+          "extension"
+        ]
+      },
+      {
+        "name": "13th",
+        "description": "13th chord - extends through 13th degree",
+        "symbol": "13",
+        "examples": [
+          "C13",
+          "Cm13",
+          "G13",
+          "D13"
+        ],
+        "tags": [
+          "extension"
+        ]
+      },
+      {
+        "name": "add9",
+        "description": "Added 9th without 7th",
+        "symbol": "add9",
+        "examples": [
+          "Cadd9",
+          "Gadd9",
+          "Amadd9",
+          "Dadd9"
+        ],
+        "tags": [
+          "add"
+        ]
+      },
+      {
+        "name": "add11",
+        "description": "Added 11th",
+        "symbol": "add11",
+        "examples": [
+          "Cadd11",
+          "Dadd11",
+          "Gadd11"
+        ],
+        "tags": [
+          "add"
+        ]
+      },
+      {
+        "name": "add13",
+        "description": "Added 13th",
+        "symbol": "add13",
+        "examples": [
+          "Cadd13",
+          "Dadd13"
+        ],
+        "tags": [
+          "add"
+        ]
+      },
+      {
+        "name": "b5",
+        "description": "Flat 5th alteration",
+        "symbol": "b5",
+        "examples": [
+          "C7b5",
+          "G7b5",
+          "Dm7b5"
+        ],
+        "tags": [
+          "alteration"
+        ]
+      },
+      {
+        "name": "#5",
+        "description": "Sharp 5th alteration",
+        "symbol": "#5",
+        "examples": [
+          "C7#5",
+          "G7#5",
+          "E7#5"
+        ],
+        "tags": [
+          "alteration"
+        ]
+      },
+      {
+        "name": "b9",
+        "description": "Flat 9th alteration",
+        "symbol": "b9",
+        "examples": [
+          "C7b9",
+          "G7b9",
+          "B7b9",
+          "C7(b9)"
+        ],
+        "tags": [
+          "alteration"
+        ]
+      },
+      {
+        "name": "#9",
+        "description": "Sharp 9th alteration (Hendrix chord)",
+        "symbol": "#9",
+        "examples": [
+          "C7#9",
+          "E7#9",
+          "G7#9",
+          "C7(#9)"
+        ],
+        "tags": [
+          "alteration"
+        ]
+      },
+      {
+        "name": "#11",
+        "description": "Sharp 11th alteration (lydian dominant)",
+        "symbol": "#11",
+        "examples": [
+          "C7#11",
+          "F7#11",
+          "Cmaj7#11",
+          "C7(#11)"
+        ],
+        "tags": [
+          "alteration"
+        ]
+      },
+      {
+        "name": "b13",
+        "description": "Flat 13th alteration",
+        "symbol": "b13",
+        "examples": [
+          "C7b13",
+          "A7b13",
+          "G7b13",
+          "A7(b13)"
+        ],
+        "tags": [
+          "alteration"
+        ]
+      },
+      {
+        "name": "slash",
+        "description": "Chord with specified bass note. The note after / indicates the lowest note to play, which may be a chord tone (inversion) or non-chord tone (added bass). Commonly used for bass lines and voice leading.",
+        "symbol": "/",
+        "examples": [
+          "C/E",
+          "C/G",
+          "Am/G",
+          "G/B",
+          "D/F#",
+          "C/Bb",
+          "Bb7/Ab",
+          "Ebmmaj7/Gb"
+        ],
+        "tags": [
+          "bass",
+          "slash"
+        ]
+      },
+      {
+        "name": "bass-line",
+        "description": "Slash chords used in sequence to create melodic bass movement. Common patterns include descending (C → C/B → Am → Am/G), ascending (Am → Am/B → C), and chromatic lines (C → C/B → C/Bb → C/A). Essential for voice leading in folk, pop, jazz, and bossa nova.",
+        "examples": [
+          "C/B",
+          "Am/G",
+          "Am/F#",
+          "D/F#",
+          "G/F",
+          "Em/D",
+          "C/Bb",
+          "Dm/C",
+          "Fmaj7/E",
+          "E7/G#"
+        ],
+        "patterns": [
+          {
+            "name": "descending major",
+            "sequence": [
+              "C",
+              "C/B",
+              "Am",
+              "Am/G",
+              "F"
+            ]
+          },
+          {
+            "name": "descending minor",
+            "sequence": [
+              "Am",
+              "Am/G",
+              "Am/F#",
+              "Fmaj7"
+            ]
+          },
+          {
+            "name": "ascending",
+            "sequence": [
+              "Am",
+              "Am/B",
+              "C",
+              "C/D",
+              "G"
+            ]
+          },
+          {
+            "name": "chromatic descent",
+            "sequence": [
+              "C",
+              "C/B",
+              "C/Bb",
+              "C/A"
+            ]
+          },
+          {
+            "name": "jazz turnaround",
+            "sequence": [
+              "Cmaj7",
+              "Am7",
+              "Dm7",
+              "G7/F",
+              "Em7",
+              "A7/C#"
+            ]
+          }
+        ],
+        "tags": [
+          "bass",
+          "slash",
+          "pattern"
+        ]
+      },
+      {
+        "name": "no-chord",
+        "description": "No chord / tacet - indicates silence or no accompaniment",
+        "symbol": "N.C.",
+        "examples": [
+          "N.C."
+        ],
+        "tags": [
+          "special"
+        ]
+      }
     ]
   }
 }
-
