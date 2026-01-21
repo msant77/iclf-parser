@@ -196,3 +196,51 @@ class ParseResult {
     this.fileHash,
   });
 }
+
+// ============================================================================
+// Rendering Utilities
+// ============================================================================
+
+/// Groups a list of chords into lines based on the [Chord.isLineEnd] flag.
+///
+/// Each sublist represents one line of chord-lyric pairs as they appeared
+/// in the original ICLF file. This preserves the original file arrangement.
+///
+/// Example:
+/// ```dart
+/// final lines = groupChordsIntoLines(section.chords);
+/// for (final line in lines) {
+///   // Render each line...
+/// }
+/// ```
+List<List<Chord>> groupChordsIntoLines(List<Chord> chords) {
+  if (chords.isEmpty) return [];
+
+  final lines = <List<Chord>>[];
+  var currentLine = <Chord>[];
+
+  for (final chord in chords) {
+    currentLine.add(chord);
+
+    if (chord.isLineEnd) {
+      lines.add(currentLine);
+      currentLine = [];
+    }
+  }
+
+  // Add any remaining chords that didn't end with isLineEnd
+  if (currentLine.isNotEmpty) {
+    lines.add(currentLine);
+  }
+
+  return lines;
+}
+
+/// Returns true if the given line contains only chords (lyrics are whitespace).
+///
+/// Chord-only lines (like intros: `[Em] [A] [F#m] [B]`) should be rendered
+/// with proper spacing between chords rather than relying on lyric positioning.
+bool isChordOnlyLine(List<Chord> lineChords) {
+  final combinedLyrics = lineChords.map((c) => c.lyrics).join();
+  return combinedLyrics.trim().isEmpty;
+}

@@ -155,9 +155,7 @@ class IclfRenderer {
     final lyricLine = lyricBuffer.toString();
 
     // Check if this is a chord-only line (lyrics are just whitespace)
-    final isChordOnlyLine = lyricLine.trim().isEmpty;
-
-    if (isChordOnlyLine) {
+    if (isChordOnlyLine(chords)) {
       // For chord-only lines, render chords with single space between them
       final chordLine = chordPositions.map((p) => p.$2).join(' ');
       return RenderLineResult(chordLine, '');
@@ -212,44 +210,38 @@ class IclfRenderer {
   }
 
   List<List<Chord>> _groupChordsIntoLines(List<Chord> chords) {
+    // Start with the shared grouping logic that respects isLineEnd
+    final baseLines = groupChordsIntoLines(chords);
     final lines = <List<Chord>>[];
-    var currentLine = <Chord>[];
-    var currentWidth = 0;
 
-    for (final chord in chords) {
-      // Plain lyrics (empty chord name) with isLineEnd get their own line
-      if (chord.name.isEmpty && chord.isLineEnd) {
-        if (currentLine.isNotEmpty) {
+    // Apply width-based wrapping on top of the base grouping
+    for (final baseLine in baseLines) {
+      var currentLine = <Chord>[];
+      var currentWidth = 0;
+
+      for (final chord in baseLine) {
+        // Plain lyrics (empty chord name) get their own line
+        if (chord.name.isEmpty && baseLine.length == 1) {
+          lines.add([chord]);
+          continue;
+        }
+
+        final segmentWidth = _calculateSegmentWidth(chord);
+
+        // Check width limit
+        if (currentWidth + segmentWidth > maxWidth && currentLine.isNotEmpty) {
           lines.add(currentLine);
           currentLine = [];
           currentWidth = 0;
         }
-        lines.add([chord]);
-        continue;
+
+        currentLine.add(chord);
+        currentWidth += segmentWidth;
       }
 
-      final segmentWidth = _calculateSegmentWidth(chord);
-
-      // Check width limit
-      if (currentWidth + segmentWidth > maxWidth && currentLine.isNotEmpty) {
+      if (currentLine.isNotEmpty) {
         lines.add(currentLine);
-        currentLine = [];
-        currentWidth = 0;
       }
-
-      currentLine.add(chord);
-      currentWidth += segmentWidth;
-
-      // Respect original line breaks from input
-      if (chord.isLineEnd) {
-        lines.add(currentLine);
-        currentLine = [];
-        currentWidth = 0;
-      }
-    }
-
-    if (currentLine.isNotEmpty) {
-      lines.add(currentLine);
     }
 
     return lines;
