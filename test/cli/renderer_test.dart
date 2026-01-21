@@ -6,7 +6,7 @@ void main() {
     late IclfRenderer renderer;
 
     setUp(() {
-      renderer = IclfRenderer(maxWidth: 80, compact: false);
+      renderer = IclfRenderer();
     });
 
     test('033 renders song title centered', () {
@@ -121,7 +121,7 @@ void main() {
     });
 
     test('042 compact mode removes blank lines', () {
-      final compactRenderer = IclfRenderer(maxWidth: 80, compact: true);
+      final compactRenderer = IclfRenderer(compact: true);
       final song = Song('Test', 'C');
       final section = Section('Verse');
       section.chords.add(Chord('C', {}, 'Hello'));
