@@ -174,5 +174,86 @@ void main() {
       expect(output, contains('CANÇÃO'));
       expect(output, contains('Olá mundo'));
     });
+
+    test('046 repeats content for empty section with same name', () {
+      final song = Song('Test', 'C');
+
+      // First Chorus with content
+      final chorus1 = Section('Chorus');
+      chorus1.chords.addAll([
+        Chord('G', {}, 'Hello '),
+        Chord('C', {}, 'world'),
+      ]);
+      song.sections.add(chorus1);
+
+      // Verse in between
+      final verse = Section('Verse');
+      verse.chords.add(Chord('Am', {}, 'Some verse'));
+      song.sections.add(verse);
+
+      // Second Chorus - empty, should repeat first Chorus content
+      final chorus2 = Section('Chorus');
+      song.sections.add(chorus2);
+
+      final output = renderer.render(song);
+
+      // Should have [Chorus] header twice
+      final chorusMatches = RegExp(r'\[Chorus\]').allMatches(output).length;
+      expect(chorusMatches, equals(2));
+
+      // "Hello world" should appear twice (once for each Chorus)
+      final helloMatches = RegExp(r'Hello').allMatches(output).length;
+      expect(helloMatches, equals(2));
+    });
+
+    test('047 empty section stays empty if no previous match', () {
+      final song = Song('Test', 'C');
+
+      // Verse with content
+      final verse = Section('Verse');
+      verse.chords.add(Chord('C', {}, 'Verse text'));
+      song.sections.add(verse);
+
+      // Empty Chorus (no previous Chorus exists)
+      final chorus = Section('Chorus');
+      song.sections.add(chorus);
+
+      final output = renderer.render(song);
+
+      expect(output, contains('[Chorus]'));
+      // Chorus should not have any chord content
+      final lines = output.split('\n');
+      final chorusIndex = lines.indexWhere((l) => l.contains('[Chorus]'));
+      // Next non-empty line after [Chorus] should not be a chord
+      expect(chorusIndex, greaterThan(-1));
+    });
+
+    test('048 uses first matching section for repeated empty section', () {
+      final song = Song('Test', 'C');
+
+      // First Chorus
+      final chorus1 = Section('Chorus');
+      chorus1.chords.add(Chord('G', {}, 'First chorus'));
+      song.sections.add(chorus1);
+
+      // Second Chorus with different content
+      final chorus2 = Section('Chorus');
+      chorus2.chords.add(Chord('Am', {}, 'Second chorus'));
+      song.sections.add(chorus2);
+
+      // Third Chorus - empty, should use FIRST Chorus content
+      final chorus3 = Section('Chorus');
+      song.sections.add(chorus3);
+
+      final output = renderer.render(song);
+
+      // "First chorus" should appear twice (original + repeated)
+      final firstMatches = RegExp(r'First chorus').allMatches(output).length;
+      expect(firstMatches, equals(2));
+
+      // "Second chorus" should appear once
+      final secondMatches = RegExp(r'Second chorus').allMatches(output).length;
+      expect(secondMatches, equals(1));
+    });
   });
 }

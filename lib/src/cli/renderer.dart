@@ -74,7 +74,7 @@ class IclfRenderer {
 
     // Sections
     for (var i = 0; i < song.sections.length; i++) {
-      buffer.write(_renderSection(song.sections[i]));
+      buffer.write(_renderSection(song.sections[i], song.sections.sublist(0, i)));
       if (!compact && i < song.sections.length - 1) {
         buffer.writeln();
       }
@@ -100,7 +100,7 @@ class IclfRenderer {
     return parts.join(' | ');
   }
 
-  String _renderSection(Section section) {
+  String _renderSection(Section section, List<Section> previousSections) {
     final buffer = StringBuffer();
 
     // Section header
@@ -111,12 +111,25 @@ class IclfRenderer {
       buffer.writeln(_formatNote(note));
     }
 
-    if (section.chords.isEmpty) {
+    // Determine which chords to render
+    var chordsToRender = section.chords;
+
+    // If section is empty, look for a previous section with the same name
+    if (chordsToRender.isEmpty) {
+      for (final prev in previousSections) {
+        if (prev.name == section.name && prev.chords.isNotEmpty) {
+          chordsToRender = prev.chords;
+          break;
+        }
+      }
+    }
+
+    if (chordsToRender.isEmpty) {
       return buffer.toString();
     }
 
     // Group chords into lines
-    final lines = _groupChordsIntoLines(section.chords);
+    final lines = _groupChordsIntoLines(chordsToRender);
 
     for (final lineChords in lines) {
       final result = _renderChordLine(lineChords);
