@@ -71,9 +71,21 @@ class Chord {
   /// Used by the renderer to preserve original line breaks.
   final bool isLineEnd;
 
+  /// Number of blank lines that appeared before this chord's line.
+  ///
+  /// Used to preserve intentional spacing between content lines.
+  /// Blank lines at section start/end are not counted.
+  final int blankLinesBefore;
+
   /// Creates a chord with the given [name], [attributes], [lyrics],
-  /// and optional [isLineEnd] flag.
-  Chord(this.name, this.attributes, this.lyrics, {this.isLineEnd = false});
+  /// and optional [isLineEnd] and [blankLinesBefore] flags.
+  Chord(
+    this.name,
+    this.attributes,
+    this.lyrics, {
+    this.isLineEnd = false,
+    this.blankLinesBefore = 0,
+  });
 }
 
 /// A note or comment in an ICLF file.

@@ -132,6 +132,13 @@ class IclfRenderer {
     final lines = _groupChordsIntoLines(chordsToRender);
 
     for (final lineChords in lines) {
+      // Output blank lines preserved from the original content
+      if (lineChords.isNotEmpty && lineChords.first.blankLinesBefore > 0) {
+        for (var i = 0; i < lineChords.first.blankLinesBefore; i++) {
+          buffer.writeln();
+        }
+      }
+
       final result = _renderChordLine(lineChords);
 
       // Only print chord line if there are chords
@@ -178,22 +185,23 @@ class IclfRenderer {
     final chordLine = StringBuffer();
     var currentPos = 0;
 
-    for (final (position, chordText) in chordPositions) {
+    for (var i = 0; i < chordPositions.length; i++) {
+      final (position, chordText) = chordPositions[i];
+
       // Add spaces to reach the chord position
       if (position > currentPos) {
         chordLine.write(' ' * (position - currentPos));
         currentPos = position;
-      }
-
-      // Write the chord with at least 1 space after (unless at end)
-      chordLine.write(chordText);
-      currentPos += chordText.length;
-
-      // Add minimum spacing between chords
-      if (currentPos < lyricLine.length) {
+      } else if (i > 0) {
+        // Previous chord extends past this chord's position - add one space
+        // Rule: all chords must be separated by at least one space
         chordLine.write(' ');
         currentPos++;
       }
+
+      // Write the chord
+      chordLine.write(chordText);
+      currentPos += chordText.length;
     }
 
     return RenderLineResult(

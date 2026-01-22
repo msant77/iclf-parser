@@ -100,9 +100,19 @@ class IclfParser {
     final chordValidation = validation['chord'] as Map<String, dynamic>;
     final chordPattern = RegExp(chordValidation['pattern'] as String);
 
+    // Track blank lines between content (not at section boundaries)
+    int pendingBlankLines = 0;
+    bool sectionHasContent = false;
+
     for (var line in lines) {
       line = line.trim();
-      if (line.isEmpty) continue;
+      if (line.isEmpty) {
+        // Only count blank lines after section has content
+        if (sectionHasContent) {
+          pendingBlankLines++;
+        }
+        continue;
+      }
 
       final directiveMatch = directiveRegex.firstMatch(line);
       if (directiveMatch != null) {
@@ -111,6 +121,9 @@ class IclfParser {
         if (key == 'section') {
           currentSection = Section(value);
           sections.add(currentSection);
+          // Reset blank line tracking for new section
+          pendingBlankLines = 0;
+          sectionHasContent = false;
           continue;
         }
         if (_directivesConfig.containsKey(key)) {
@@ -156,13 +169,23 @@ class IclfParser {
         if (currentSection == null) {
           currentSection = Section('Intro');
           sections.add(currentSection);
+          pendingBlankLines = 0;
+          sectionHasContent = false;
         }
+
+        // Track blank lines for the first chord of this line
+        final lineBlankLines = pendingBlankLines;
+        pendingBlankLines = 0;
+        sectionHasContent = true;
+        bool isFirstChordOfLine = true;
 
         // Capture leading text before the first chord
         final firstMatchStart = chordMatches.first.start;
         if (firstMatchStart > 0) {
           final leadingText = line.substring(0, firstMatchStart);
-          currentSection.chords.add(Chord('', {}, leadingText));
+          currentSection.chords.add(Chord('', {}, leadingText,
+              blankLinesBefore: lineBlankLines));
+          isFirstChordOfLine = false;
         }
 
         for (var i = 0; i < chordMatches.length; i++) {
@@ -186,7 +209,8 @@ class IclfParser {
             }
           }
           // Skip validation for empty chord names (plain lyrics)
-          if (chordName.isNotEmpty && !_validator.validateChord(chordName, chordPattern, errors)) {
+          if (chordName.isNotEmpty &&
+              !_validator.validateChord(chordName, chordPattern, errors)) {
             malformed = true;
           }
           final chordAttributes = _chordsConfig['attributes'] as List<dynamic>;
@@ -211,8 +235,14 @@ class IclfParser {
               }
             }
           }
-          currentSection.chords.add(Chord(chordName, attributes, lyrics,
-              isLineEnd: isLast));
+          currentSection.chords.add(Chord(
+            chordName,
+            attributes,
+            lyrics,
+            isLineEnd: isLast,
+            blankLinesBefore: isFirstChordOfLine ? lineBlankLines : 0,
+          ));
+          isFirstChordOfLine = false;
         }
         continue;
       }
@@ -222,9 +252,15 @@ class IclfParser {
       if (currentSection == null) {
         currentSection = Section('Intro');
         sections.add(currentSection);
+        pendingBlankLines = 0;
+        sectionHasContent = false;
       }
       // Add as a chord with empty name to represent plain lyrics
-      currentSection.chords.add(Chord('', {}, line, isLineEnd: true));
+      final lineBlankLines = pendingBlankLines;
+      pendingBlankLines = 0;
+      sectionHasContent = true;
+      currentSection.chords.add(Chord('', {}, line,
+          isLineEnd: true, blankLinesBefore: lineBlankLines));
     }
 
     String? fixedContent = content;
