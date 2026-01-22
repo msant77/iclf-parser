@@ -37,7 +37,7 @@ dart run bin/iclf.dart render song.iclf
 # With options
 dart run bin/iclf.dart render song.iclf --width 120 --compact
 dart run bin/iclf.dart render song.iclf --output rendered.txt
-dart run bin/iclf.dart render song.iclf --config test/fixtures/directives.json
+dart run bin/iclf.dart render song.iclf --config ../iclf-standard/directives.json
 
 # Help
 dart run bin/iclf.dart --help
