@@ -42,7 +42,7 @@ This file tracks intended GitHub issues before creation. Once approved, issues w
 
 ## Enhancements
 
-### ~~Repeat content for empty sections with same name~~ `[GH: -]`
+### ~~Repeat content for empty sections with same name~~ `[GH: #1 ✓]`
 - **Status:** Done
 - **Labels:** `feature`, `cli`
 - **Description:** When an empty section has the same name as a previous section with content, render the original section's content. This provides implicit repetition without requiring the `{repeat: ...}` directive.
