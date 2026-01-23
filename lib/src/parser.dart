@@ -191,10 +191,19 @@ class IclfParser {
         for (var i = 0; i < chordMatches.length; i++) {
           final match = chordMatches[i];
           final isLast = i == chordMatches.length - 1;
-          final chordName = match.group(1)!.trim();
+          var chordName = match.group(1)!.trim();
           final attrStr = match.group(2);
           final lyrics = match.group(3) ?? '';
           final attributes = <String, String>{};
+
+          // Extract bass note from slash chords (e.g., "A7/D" -> chord: "A7", bass: "D")
+          final slashIndex = chordName.lastIndexOf('/');
+          if (slashIndex > 0 && slashIndex < chordName.length - 1) {
+            final bassNote = chordName.substring(slashIndex + 1);
+            chordName = chordName.substring(0, slashIndex);
+            attributes['bass'] = bassNote;
+          }
+
           if (attrStr != null) {
             final attrParts = attrStr.split(',');
             for (int j = 0; j < attrParts.length; j += 2) {

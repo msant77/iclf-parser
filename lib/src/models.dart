@@ -44,19 +44,21 @@ class Directive {
 /// Example:
 /// ```
 /// [Am]Amazing    // Simple chord
-/// [G:bass,D]grace  // Chord with bass note attribute
+/// [G/D]grace     // Slash chord (bass note extracted to attributes)
 /// [C:inversion,1]how  // Chord with inversion
 /// ```
 class Chord {
-  /// The chord name (e.g., "Am", "G7", "Cmaj7").
+  /// The chord name without bass note (e.g., "Am", "G7", "Cmaj7").
   ///
+  /// For slash chords like "A7/D", this contains just "A7".
+  /// Use [symbol] to get the full notation including bass note.
   /// Empty string indicates plain lyrics without a chord.
   final String name;
 
   /// Optional chord attributes as key-value pairs.
   ///
   /// Common attributes include:
-  /// - "bass": Bass note for slash chords (e.g., "D" for G/D)
+  /// - "bass": Bass note for slash chords (e.g., "D" for A7/D)
   /// - "inversion": Chord inversion (0-3)
   /// - "voicing": Specific voicing identifier
   final Map<String, String> attributes;
@@ -86,6 +88,20 @@ class Chord {
     this.isLineEnd = false,
     this.blankLinesBefore = 0,
   });
+
+  /// The bass note for slash chords, or null if not a slash chord.
+  ///
+  /// For "A7/D", this returns "D".
+  String? get bassNote => attributes['bass'];
+
+  /// The full chord symbol including bass note for slash chords.
+  ///
+  /// For regular chords, returns [name] (e.g., "Am").
+  /// For slash chords, returns the full notation (e.g., "A7/D").
+  String get symbol {
+    final bass = bassNote;
+    return bass != null ? '$name/$bass' : name;
+  }
 }
 
 /// A note or comment in an ICLF file.
