@@ -64,6 +64,17 @@ This file tracks intended GitHub issues before creation. Once approved, issues w
   - [x] Add tests for repeated empty sections
   - [x] Works with `face.iclf` sample (has `{section: part one}` repeated empty)
 
+### ~~Extract bass note from slash chords during parsing~~ `[GH: #2 ✓]`
+- **Status:** Done
+- **Labels:** `feature`, `enhancement`
+- **Description:** Slash chords like A7/D should have their bass note extracted into the attributes map, allowing the chord name to be just 'A7' while preserving the bass note information.
+- **Acceptance Criteria:**
+  - [x] Parsing 'A7/D' creates Chord with name='A7' and attributes['bass']='D'
+  - [x] Added `bassNote` getter to Chord class
+  - [x] Added `symbol` property that reconstructs full slash chord notation
+  - [x] Regular chords unaffected (`chord.symbol` == `chord.name`)
+  - [x] All tests pass
+
 ---
 
 ## Issue Template
