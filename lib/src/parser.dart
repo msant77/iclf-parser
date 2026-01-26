@@ -93,8 +93,8 @@ class IclfParser {
     bool malformed = false;
 
     final directiveRegex = RegExp(r'^\{([^:]+):\s*(.+)\}$');
-    final chordRegex =
-        RegExp(r'\[([^\]:]+)(?::([^\]]+))?\]([^\[]*)'); // Unicode-safe, allows empty lyrics
+    final chordRegex = RegExp(
+        r'\[([^\]:]+)(?::([^\]]+))?\]([^\[]*)'); // Unicode-safe, allows empty lyrics
     final noteRegex = RegExp(r'^# (.+)');
     final validation = _chordsConfig['validation'] as Map<String, dynamic>;
     final chordValidation = validation['chord'] as Map<String, dynamic>;
@@ -183,8 +183,8 @@ class IclfParser {
         final firstMatchStart = chordMatches.first.start;
         if (firstMatchStart > 0) {
           final leadingText = line.substring(0, firstMatchStart);
-          currentSection.chords.add(Chord('', {}, leadingText,
-              blankLinesBefore: lineBlankLines));
+          currentSection.chords.add(
+              Chord('', {}, leadingText, blankLinesBefore: lineBlankLines));
           isFirstChordOfLine = false;
         }
 
@@ -197,7 +197,21 @@ class IclfParser {
           final attributes = <String, String>{};
 
           // Extract bass note from slash chords (e.g., "A7/D" -> chord: "A7", bass: "D")
-          final slashIndex = chordName.lastIndexOf('/');
+          // Find the last '/' that is NOT inside parentheses, so that
+          // Brazilian compound intervals like (6/9) are preserved.
+          var slashIndex = -1;
+          var parenDepth = 0;
+          for (var ci = chordName.length - 1; ci >= 0; ci--) {
+            final ch = chordName[ci];
+            if (ch == ')') {
+              parenDepth++;
+            } else if (ch == '(') {
+              parenDepth--;
+            } else if (ch == '/' && parenDepth == 0) {
+              slashIndex = ci;
+              break;
+            }
+          }
           if (slashIndex > 0 && slashIndex < chordName.length - 1) {
             final bassNote = chordName.substring(slashIndex + 1);
             chordName = chordName.substring(0, slashIndex);
@@ -285,8 +299,7 @@ class IclfParser {
           !globalDirectives.containsKey(configEntry.key)) {
         if (config.containsKey('default')) {
           final defaultValue = config['default'] as String;
-          fixedContent =
-              '{${configEntry.key}: $defaultValue}\n$fixedContent';
+          fixedContent = '{${configEntry.key}: $defaultValue}\n$fixedContent';
           warnings.add('Added missing {${configEntry.key}: $defaultValue}');
           globalDirectives[configEntry.key] = defaultValue;
           if (status == ParseStatus.valid) status = ParseStatus.recoverable;

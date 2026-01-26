@@ -34,7 +34,8 @@ void main() {
     test('$chord - $description', () {
       final result = parseChord(chord);
       expect(result.status, isNot(ParseStatus.invalid),
-          reason: 'Chord "$chord" ($description) should be valid but got errors: ${result.errors}');
+          reason:
+              'Chord "$chord" ($description) should be valid but got errors: ${result.errors}');
     });
   }
 
@@ -868,6 +869,123 @@ void main() {
     expectValid('Dsus4', 'Dsus4 common in pop');
     expectValid('Gsus4', 'Gsus4 common in pop');
     expectValid('Asus2', 'Asus2 common in pop');
+  });
+
+  // ============================================================================
+  // BRAZILIAN NOTATION - 7M (Major 7th shorthand)
+  // ============================================================================
+  group('Brazilian - 7M major 7th shorthand', () {
+    expectValid('C7M', 'C major 7th (Brazilian 7M)');
+    expectValid('A7M', 'A major 7th (Brazilian 7M)');
+    expectValid('D7M', 'D major 7th (Brazilian 7M)');
+    expectValid('E7M', 'E major 7th (Brazilian 7M)');
+    expectValid('F7M', 'F major 7th (Brazilian 7M)');
+    expectValid('G7M', 'G major 7th (Brazilian 7M)');
+    expectValid('B7M', 'B major 7th (Brazilian 7M)');
+    expectValid('F#7M', 'F# major 7th (Brazilian 7M)');
+    expectValid('Bb7M', 'Bb major 7th (Brazilian 7M)');
+    expectValid('Eb7M', 'Eb major 7th (Brazilian 7M)');
+    expectValid('Ab7M', 'Ab major 7th (Brazilian 7M)');
+    expectValid('C#7M', 'C# major 7th (Brazilian 7M)');
+  });
+
+  group('Brazilian - 7M invalid forms', () {
+    expectInvalid('CM', 'standalone M without extension number');
+    expectInvalid('CmM', 'mM without number');
+  });
+
+  // ============================================================================
+  // BRAZILIAN NOTATION - Parenthesized alterations with +/-
+  // ============================================================================
+  group('Brazilian - Flat alterations with minus sign', () {
+    expectValid('C7(5-)', 'C7 flat 5 (Brazilian minus)');
+    expectValid('Am7(5-)', 'Am7 flat 5 (Brazilian minus)');
+    expectValid('D#m7(5-)', 'D#m7 flat 5 (Brazilian minus)');
+    expectValid('C#m7(5-)', 'C#m7 flat 5 (Brazilian minus)');
+    expectValid('C7(9-)', 'C7 flat 9 (Brazilian minus)');
+    expectValid('C7(11-)', 'C7 flat 11 (Brazilian minus)');
+    expectValid('C7(13-)', 'C7 flat 13 (Brazilian minus)');
+    expectValid('B7(9-)', 'B7 flat 9 (Brazilian minus)');
+    expectValid('A7(13-)', 'A7 flat 13 (Brazilian minus)');
+    expectValid('Cm7(5-)', 'Cm7 flat 5 (Brazilian minus)');
+    expectValid('Gm7(5-)', 'Gm7 flat 5 (Brazilian minus)');
+  });
+
+  group('Brazilian - Sharp alterations with plus sign', () {
+    expectValid('C7(5+)', 'C7 sharp 5 (Brazilian plus)');
+    expectValid('C7(9+)', 'C7 sharp 9 (Brazilian plus)');
+    expectValid('C7(11+)', 'C7 sharp 11 (Brazilian plus)');
+    expectValid('C7(13+)', 'C7 sharp 13 (Brazilian plus)');
+    expectValid('E7(9+)', 'E7 sharp 9 (Brazilian plus)');
+    expectValid('F#7(5+)', 'F#7 sharp 5 (Brazilian plus)');
+  });
+
+  // ============================================================================
+  // BRAZILIAN NOTATION - Bare numbers in parentheses (add notation)
+  // ============================================================================
+  group('Brazilian - Bare numbers in parentheses', () {
+    expectValid('C(9)', 'C add 9 (Brazilian parens)');
+    expectValid('C(11)', 'C add 11 (Brazilian parens)');
+    expectValid('C(13)', 'C add 13 (Brazilian parens)');
+    expectValid('C(4)', 'C add 4 (Brazilian parens)');
+    expectValid('A6(9)', 'A6 add 9 (Brazilian parens)');
+    expectValid('Am7(9)', 'Am7 add 9 (Brazilian parens)');
+    expectValid('C7(9)', 'C7 add 9 (Brazilian parens)');
+    expectValid('C7(13)', 'C7 add 13 (Brazilian parens)');
+  });
+
+  group('Brazilian - Invalid bare numbers in parentheses', () {
+    expectInvalid('C()', 'empty parentheses');
+    expectInvalid('C(2)', '2 not valid in parentheses');
+    expectInvalid('C(3)', '3 not valid in parentheses');
+    expectInvalid('C(8)', '8 not valid in parentheses');
+    expectInvalid('C(10)', '10 not valid in parentheses');
+    expectInvalid('C(15)', '15 not valid in parentheses');
+  });
+
+  // ============================================================================
+  // BRAZILIAN NOTATION - Compound intervals in parentheses
+  // ============================================================================
+  group('Brazilian - Compound intervals', () {
+    expectValid('C(6/9)', 'C 6/9 (Brazilian compound)');
+    expectValid('C7M(6/9)', 'C7M 6/9 (Brazilian compound)');
+    expectValid('A7M(6/11+)', 'A7M 6/sharp 11 (Brazilian compound)');
+    expectValid('C(9/13)', 'C 9/13 (Brazilian compound)');
+    expectValid('C7(9/13-)', 'C7 9/flat 13 (Brazilian compound)');
+    expectValid('A6(9/11+)', 'A6 9/sharp 11 (Brazilian compound)');
+  });
+
+  // ============================================================================
+  // BRAZILIAN NOTATION - Multiple parenthesized alterations
+  // ============================================================================
+  group('Brazilian - Multiple parenthesized alterations', () {
+    expectValid('G7(9+)(13-)', 'G7 sharp 9 + flat 13 (Brazilian)');
+    expectValid('C7(b9)(#11)', 'C7 flat 9 + sharp 11 (mixed standard)');
+    expectValid('C7(b5)', 'C7 flat 5 in parens (standard in Brazilian)');
+    expectValid('C7(#9)', 'C7 sharp 9 in parens (standard in Brazilian)');
+  });
+
+  // ============================================================================
+  // BRAZILIAN NOTATION - Real-world bossa nova & choro chords
+  // ============================================================================
+  group('Real-World - O Mundo É um Moinho (Cartola)', () {
+    expectValid('D#m7(5-)', 'D#m7(5-) from Cartola');
+    expectValid('C#m7(5-)', 'C#m7(5-) from Cartola');
+    expectValid('A6(9)', 'A6(9) from Cartola');
+    expectValid('A7M(6/11+)', 'A7M(6/11+) from Cartola');
+  });
+
+  group('Real-World - Common Brazilian jazz chords', () {
+    expectValid('C7M', 'C major 7 (cifra brasileira)');
+    expectValid('Am7(5-)', 'Am half-diminished (cifra brasileira)');
+    expectValid('G7(9-)', 'G7 flat 9 (cifra brasileira)');
+    expectValid('F7M', 'F major 7 (cifra brasileira)');
+    expectValid('E7(9+)', 'E7 sharp 9 (cifra brasileira)');
+    expectValid('D7M(6/9)', 'D major 7 6/9 (cifra brasileira)');
+    expectValid('Bb7M', 'Bb major 7 (cifra brasileira)');
+    expectValid('Eb7M', 'Eb major 7 (cifra brasileira)');
+    expectValid('F#7(5+)', 'F#7 sharp 5 (cifra brasileira)');
+    expectValid('B7(9-)', 'B7 flat 9 (cifra brasileira)');
   });
 
   // ============================================================================
