@@ -75,7 +75,7 @@ This file tracks intended GitHub issues before creation. Once approved, issues w
   - [x] Regular chords unaffected (`chord.symbol` == `chord.name`)
   - [x] All tests pass
 
-### ~~Add Brazilian chord notation tests and parser fix~~ `[GH: #3]`
+### ~~Add Brazilian chord notation tests and parser fix~~ `[GH: #3 ✓]`
 - **Status:** Done ✅
 - **Labels:** `feature`, `enhancement`
 - **Description:** Add comprehensive tests for Brazilian chord notation conventions used in bossa nova and choro, including `7M` (major 7), parenthesized alterations with `+`/`-`, bare numbers in parentheses, and compound intervals. Also fix the parser to preserve `/` inside parentheses.
