@@ -87,6 +87,7 @@ class IclfParser {
     final warnings = <String>[];
     final globalDirectives = <String, String>{};
     final seenGlobals = <String, int>{};
+    final chordVoicings = <String, String>{};
     final notes = <Note>[];
     final sections = <Section>[];
     Section? currentSection;
@@ -130,6 +131,16 @@ class IclfParser {
           final config = _directivesConfig[key]!;
           if (!_validator.validateDirective(config, value, errors)) {
             malformed = true;
+          }
+          // Handle chord_voicing specially: multiple allowed, parse into map
+          if (key == 'chord_voicing') {
+            final commaIdx = value.indexOf(',');
+            if (commaIdx > 0) {
+              final chordName = value.substring(0, commaIdx).trim();
+              final frets = value.substring(commaIdx + 1).trim();
+              chordVoicings[chordName] = frets;
+            }
+            continue;
           }
           final scope = config['scope'] as String;
           if (scope.contains('global')) {
@@ -335,6 +346,7 @@ class IclfParser {
       song.globals.addAll(globalDirectives);
       song.globalNotes.addAll(notes);
       song.sections.addAll(sections);
+      song.preferredVoicings.addAll(chordVoicings);
       for (final sec in sections) {
         for (final dir in sec.localDirectives) {
           if (dir.name == 'repeat') {

@@ -90,6 +90,16 @@ This file tracks intended GitHub issues before creation. Once approved, issues w
   - [x] Test invalid forms: `CM`, `CmM`, empty parens, invalid intervals
   - [x] All 885 tests pass
 
+### ✅ Parse chord_voicing directives into Song.preferredVoicings `[GH: #5]`
+- **Status:** Done
+- **Labels:** `feature`, `parsing`
+- **Description:** Added `preferredVoicings` map to Song model and parsing support for `{chord_voicing: ChordName, FretString}` directive.
+- **Acceptance Criteria:**
+  - [x] Song.preferredVoicings populated from chord_voicing directives
+  - [x] Multiple chord_voicing directives supported
+  - [x] Last voicing wins when same chord specified multiple times
+  - [x] Tests added for voicing parsing
+
 ### ✅ Support Brazilian 7+ and bare compound interval chord notation `[GH: #4]`
 - **Status:** Done
 - **Labels:** `feature`, `chord-parsing`

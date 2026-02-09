@@ -170,13 +170,19 @@ class Song {
   /// Notes that appear before any section declaration.
   final List<Note> globalNotes;
 
+  /// Preferred chord voicings from `{chord_voicing: ChordName, frets}` directives.
+  ///
+  /// Maps chord name to fret string (e.g., `{'Am': 'x02210', 'F': '133211'}`).
+  final Map<String, String> preferredVoicings;
+
   /// Creates a song with the given [title] and [key].
   ///
   /// Collections are initialized empty and populated during parsing.
   Song(this.title, this.key)
       : globals = {},
         sections = [],
-        globalNotes = [];
+        globalNotes = [],
+        preferredVoicings = {};
 }
 
 /// The result of parsing an ICLF file.

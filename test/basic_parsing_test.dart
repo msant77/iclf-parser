@@ -52,5 +52,34 @@ void main() {
       final result = parser.parse(content, filePath: 'test.iclf');
       expect(result.fileHash, isNotNull);
     }, tags: ['tag1']);
+
+    test('006 parses chord_voicing directives', () {
+      const content = '''
+{title: Test}
+{key: C}
+{chord_voicing: Am, x02210}
+{chord_voicing: F, 133211}
+{chord_voicing: C, x32010}
+[Am]Hello [F]world [C]test''';
+      final result = parser.parse(content);
+      expect(result.status, ParseStatus.valid);
+      expect(result.song?.preferredVoicings, {
+        'Am': 'x02210',
+        'F': '133211',
+        'C': 'x32010',
+      });
+    }, tags: ['tag1']);
+
+    test('007 chord_voicing overrides with last value', () {
+      const content = '''
+{title: Test}
+{key: C}
+{chord_voicing: Am, x02210}
+{chord_voicing: Am, 577555}
+[Am]Hello''';
+      final result = parser.parse(content);
+      expect(result.status, ParseStatus.valid);
+      expect(result.song?.preferredVoicings['Am'], '577555');
+    }, tags: ['tag1']);
   });
 }
