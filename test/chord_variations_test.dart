@@ -989,6 +989,53 @@ void main() {
   });
 
   // ============================================================================
+  // BRAZILIAN 7+ NOTATION (maj7)
+  // ============================================================================
+  group('Brazilian - 7+ major 7th shorthand', () {
+    expectValid('C7+', 'C major 7th (Brazilian 7+)');
+    expectValid('A7+', 'A major 7th (Brazilian 7+)');
+    expectValid('D7+', 'D major 7th (Brazilian 7+)');
+    expectValid('E7+', 'E major 7th (Brazilian 7+)');
+    expectValid('F7+', 'F major 7th (Brazilian 7+)');
+    expectValid('G7+', 'G major 7th (Brazilian 7+)');
+    expectValid('B7+', 'B major 7th (Brazilian 7+)');
+    expectValid('F#7+', 'F# major 7th (Brazilian 7+)');
+    expectValid('Bb7+', 'Bb major 7th (Brazilian 7+)');
+    expectValid('Am7+', 'Am major 7th (Brazilian 7+)');
+  });
+
+  // ============================================================================
+  // BARE COMPOUND INTERVALS (D7/9 notation)
+  // ============================================================================
+  group('Brazilian - Bare compound intervals', () {
+    expectValid('D7/9', 'D7 with 9th (Brazilian bare compound)');
+    expectValid('C7/9', 'C7 with 9th (Brazilian bare compound)');
+    expectValid('A7/13', 'A7 with 13th (Brazilian bare compound)');
+    expectValid('G7/9', 'G7 with 9th (Brazilian bare compound)');
+    expectValid('E7/9', 'E7 with 9th (Brazilian bare compound)');
+    expectValid('C7/11', 'C7 with 11th (Brazilian bare compound)');
+    expectValid('D7/4', 'D7 with 4th (Brazilian bare compound)');
+    expectValid('Am7/9', 'Am7 with 9th (Brazilian bare compound)');
+  });
+
+  group('Brazilian - Bare compound intervals with bass note', () {
+    expectValid('D7/9/A', 'D7/9 over A bass');
+    expectValid('C7/13/E', 'C7/13 over E bass');
+    expectValid('G7/9/F', 'G7/9 over F bass');
+  });
+
+  group('Real-World - Toca de Tatu (João Bosco)', () {
+    expectValid('A7+', 'A7+ from Toca de Tatu');
+    expectValid('D7/9', 'D7/9 from Toca de Tatu');
+    expectValid('Em7', 'Em7 from Toca de Tatu');
+    expectValid('A7', 'A7 from Toca de Tatu');
+    expectValid('Dm7', 'Dm7 from Toca de Tatu');
+    expectValid('G7', 'G7 from Toca de Tatu');
+    expectValid('C7M', 'C7M from Toca de Tatu');
+    expectValid('F7M', 'F7M from Toca de Tatu');
+  });
+
+  // ============================================================================
   // EDGE CASES
   // ============================================================================
   group('Edge Cases - Lowercase (invalid)', () {

@@ -90,6 +90,17 @@ This file tracks intended GitHub issues before creation. Once approved, issues w
   - [x] Test invalid forms: `CM`, `CmM`, empty parens, invalid intervals
   - [x] All 885 tests pass
 
+### ✅ Support Brazilian 7+ and bare compound interval chord notation `[GH: #4]`
+- **Status:** Done
+- **Labels:** `feature`, `chord-parsing`
+- **Description:** Updated parser to handle `7+` (Brazilian maj7) and bare compound intervals (`D7/9`). Bass note extraction now skips `/digit` sequences (compound intervals).
+- **Acceptance Criteria:**
+  - [x] Parser handles 7+ chords correctly
+  - [x] Parser handles bare compound intervals (D7/9, C7/13)
+  - [x] Bass note extraction skips compound intervals
+  - [x] Tests added for all new patterns
+  - [x] Existing 657 tests still pass
+
 ---
 
 ## Issue Template

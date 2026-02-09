@@ -213,9 +213,15 @@ class IclfParser {
             }
           }
           if (slashIndex > 0 && slashIndex < chordName.length - 1) {
-            final bassNote = chordName.substring(slashIndex + 1);
-            chordName = chordName.substring(0, slashIndex);
-            attributes['bass'] = bassNote;
+            final afterSlash = chordName.substring(slashIndex + 1);
+            // Only extract as bass note if it starts with a note letter [A-G].
+            // Bare digits like /9, /11, /13 are compound intervals, not bass notes.
+            if (afterSlash.isNotEmpty &&
+                afterSlash.codeUnitAt(0) >= 0x41 &&
+                afterSlash.codeUnitAt(0) <= 0x47) {
+              chordName = chordName.substring(0, slashIndex);
+              attributes['bass'] = afterSlash;
+            }
           }
 
           if (attrStr != null) {
