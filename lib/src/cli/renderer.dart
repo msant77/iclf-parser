@@ -74,7 +74,8 @@ class IclfRenderer {
 
     // Sections
     for (var i = 0; i < song.sections.length; i++) {
-      buffer.write(_renderSection(song.sections[i], song.sections.sublist(0, i)));
+      buffer
+          .write(_renderSection(song.sections[i], song.sections.sublist(0, i)));
       if (!compact && i < song.sections.length - 1) {
         buffer.writeln();
       }

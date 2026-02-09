@@ -49,7 +49,8 @@ class CliRunner {
 
   ArgParser _buildArgParser() {
     final parser = ArgParser()
-      ..addFlag('help', abbr: 'h', negatable: false, help: 'Show this help message')
+      ..addFlag('help',
+          abbr: 'h', negatable: false, help: 'Show this help message')
       ..addFlag('version', negatable: false, help: 'Show version number');
 
     final renderParser = ArgParser()
@@ -61,7 +62,8 @@ class CliRunner {
           defaultsTo: _defaultConfigUrl)
       ..addOption('width',
           abbr: 'w', help: 'Maximum line width', defaultsTo: '80')
-      ..addFlag('compact', help: 'Compact output (no blank lines between sections)')
+      ..addFlag('compact',
+          help: 'Compact output (no blank lines between sections)')
       ..addFlag('verbose', abbr: 'v', help: 'Show verbose parsing information')
       ..addFlag('help', abbr: 'h', negatable: false, help: 'Show render help');
 
@@ -96,7 +98,8 @@ class CliRunner {
     IclfParser iclfParser;
     try {
       // Check if it's a local file path
-      if (!configPath.startsWith('http://') && !configPath.startsWith('https://')) {
+      if (!configPath.startsWith('http://') &&
+          !configPath.startsWith('https://')) {
         final configFile = File(configPath);
         if (!await configFile.exists()) {
           stderr.writeln('Error: Config file not found: $configPath');
@@ -109,7 +112,8 @@ class CliRunner {
       }
     } catch (e) {
       stderr.writeln('Error loading configuration: $e');
-      stderr.writeln('Tip: Check your network connection or use --config with a local file path.');
+      stderr.writeln(
+          'Tip: Check your network connection or use --config with a local file path.');
       return 1;
     }
 
@@ -136,7 +140,8 @@ class CliRunner {
         stderr.writeln('[verbose] Sections: ${result.song!.sections.length}');
         for (var i = 0; i < result.song!.sections.length; i++) {
           final section = result.song!.sections[i];
-          stderr.writeln('[verbose]   Section[$i]: ${section.name} (${section.chords.length} chords)');
+          stderr.writeln(
+              '[verbose]   Section[$i]: ${section.name} (${section.chords.length} chords)');
         }
       }
     }
@@ -210,9 +215,11 @@ class CliRunner {
     print('Options:');
     print('  -o, --output <file>   Write output to file instead of stdout');
     print('  -w, --width <num>     Maximum line width (default: 80)');
-    print('  --compact             Compact output (no blank lines between sections)');
+    print(
+        '  --compact             Compact output (no blank lines between sections)');
     print('  -v, --verbose         Show verbose parsing information');
-    print('  -c, --config <path>   Custom directives.json URL or local file path');
+    print(
+        '  -c, --config <path>   Custom directives.json URL or local file path');
     print('  -h, --help            Show this help message');
     print('');
     print('Examples:');

@@ -54,7 +54,8 @@ void main() {
     });
 
     test('019 validates minor chords', () {
-      const content = '{title: Test}\n{key: Am}\n[Am]la [Cm]do [F#m]fa# [Gmin]sol';
+      const content =
+          '{title: Test}\n{key: Am}\n[Am]la [Cm]do [F#m]fa# [Gmin]sol';
       final result = parser.parse(content);
       expect(result.status, ParseStatus.valid);
       expect(result.song?.sections.first.chords.length, 4);
@@ -69,7 +70,8 @@ void main() {
     });
 
     test('021 validates minor-major seventh chord (mmaj7)', () {
-      const content = '{title: Test}\n{key: C}\n[Cmmaj7]minor-major [Ammaj7]test';
+      const content =
+          '{title: Test}\n{key: C}\n[Cmmaj7]minor-major [Ammaj7]test';
       final result = parser.parse(content);
       expect(result.status, ParseStatus.valid);
       expect(result.song?.sections.first.chords.length, 2);
