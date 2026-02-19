@@ -113,18 +113,19 @@ This file tracks intended GitHub issues before creation. Once approved, issues w
 
 ---
 
-## Sprint C: New Features
+## Sprint C: New Features ✅
 
-### [Feature] Add IclfTextMapper.insertDirective() for chord_voicing export `[GH: #6]`
-- **Status:** Planned
+### [Feature] ✅ Add ChordMatcher for chord validation across parser ecosystem `[GH: #6]`
+- **Status:** Done
 - **Labels:** `feature`
-- **Description:** Add utility to inject directives into ICLF content, enabling favorite voicings to be written back to ICLF files as `{chord_voicing: ChordName, FretString}` directives.
-- **Related:** chordo GH #173
+- **Description:** Added `ChordMatcher` class for consistent chord validation across the ICLF ecosystem. Supports Brazilian notation (7+, 7M, parenthesized alterations), slash chords, compound intervals. Exported from `iclf_parser.dart`. The directive insertion utility (`IclfTextMapper`) was implemented in chordo (#173) since it operates on app-level content.
+- **Related:** chordo GH #173, chordo GH #168
 - **Acceptance Criteria:**
-  - [ ] insertDirective() method added to IclfTextMapper
-  - [ ] Correctly handles insertion at various positions in ICLF content
-  - [ ] Round-trip: insert → parse → same data
-  - [ ] Unit tests for directive insertion
+  - [x] `ChordMatcher` class with `isValidChord()` and `extractChordInfo()`
+  - [x] Supports Brazilian notation: 7+, 7M, (5-), (9+), (6/9), etc.
+  - [x] Handles slash chords and compound intervals
+  - [x] Exported from `iclf_parser.dart` public API
+  - [x] 292-line test suite with comprehensive coverage
 
 ---
 
