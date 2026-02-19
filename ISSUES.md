@@ -113,6 +113,21 @@ This file tracks intended GitHub issues before creation. Once approved, issues w
 
 ---
 
+## Sprint C: New Features
+
+### [Feature] Add IclfTextMapper.insertDirective() for chord_voicing export `[GH: #6]`
+- **Status:** Planned
+- **Labels:** `feature`
+- **Description:** Add utility to inject directives into ICLF content, enabling favorite voicings to be written back to ICLF files as `{chord_voicing: ChordName, FretString}` directives.
+- **Related:** chordo GH #173
+- **Acceptance Criteria:**
+  - [ ] insertDirective() method added to IclfTextMapper
+  - [ ] Correctly handles insertion at various positions in ICLF content
+  - [ ] Round-trip: insert → parse → same data
+  - [ ] Unit tests for directive insertion
+
+---
+
 ## Issue Template
 
 ```markdown
